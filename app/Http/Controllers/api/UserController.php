@@ -11,10 +11,12 @@ use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use App\Enums\PermissionEnum;
+use App\Http\Requests\user\UpdateUserRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\Contact;
 use App\Models\UserPermission;
 use Illuminate\Support\Facades\Hash;
+use Mockery\Undefined;
 
 class UserController extends Controller
 {
@@ -183,94 +185,132 @@ class UserController extends Controller
     {
         $request->validated();
         try {
-            $user = $request->user();
-            // 1. Check User has create permission
-            if ($user->hasPermission(PermissionEnum::users->value)) {
-                // 2. Check email
-                $email = Email::where('value', '=', $request->email)->first();
-                if ($email) {
+            // 1. Check email
+            $email = Email::where('value', '=', $request->email)->first();
+            if ($email) {
+                return response()->json([
+                    'message' => __('app_translation.email_exist'),
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
+            // 2. Check contact
+            $contact = null;
+            if ($request->contact) {
+                $contact = Contact::where('value', '=', $request->contact)->first();
+                if ($contact) {
                     return response()->json([
-                        'message' => __('app_translation.email_exist'),
+                        'message' => __('app_translation.contact_exist'),
                     ], 400, [], JSON_UNESCAPED_UNICODE);
                 }
-                $email = Email::create([
-                    "value" => $request->email
-                ]);
-                // 3. Check contact
-                $contact = null;
-                if ($request->contact) {
-                    $contact = Contact::where('value', '=', $request->contact)->first();
-                    if ($contact) {
-                        return response()->json([
-                            'message' => __('app_translation.contact_exist'),
-                        ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
+            // Add email and contact
+            $email = Email::create([
+                "value" => $request->email
+            ]);
+            $contact = Contact::create([
+                "value" => $request->contact
+            ]);
+            // 3. Create User
+            $newUser = User::create([
+                "full_name" => $request->fullName,
+                "username" => $request->username,
+                "email_id" => $email->id,
+                "password" => Hash::make($request->password),
+                "role_id" => $request->role,
+                "job_id" => $request->job,
+                "department_id" => $request->department,
+                "contact_id" => $contact ? $contact->id : $contact,
+                "profile" => null,
+                "status" => $request->status === "true" ? true : false,
+                "grant_permission" => $request->grant === "true" ? true : false,
+            ]);
+
+            // 4. Add user permissions
+            if ($request->Permission) {
+                $data = json_decode($request->Permission, true);
+
+                foreach ($data as $category  => $permissions) {
+                    $userPermissions = new UserPermission();
+                    $userPermissions->permission = $category;
+                    $userPermissions->user_id = $newUser->id;
+                    // If no access is givin to secction no need to add record
+                    $addModel = false;
+                    foreach ($permissions as $action => $allowed) {
+                        // Check if the value is true or false
+                        if ($allowed)
+                            $addModel = true;
+                        if ($action == "Add")
+                            $userPermissions->add = $allowed;
+                        else if ($action == "Edit")
+                            $userPermissions->edit = $allowed;
+                        else if ($action == "Delete")
+                            $userPermissions->delete = $allowed;
+                        else
+                            $userPermissions->view = $allowed;
                     }
-                    $contact = Contact::create([
-                        "value" => $request->contact
+                    if ($addModel)
+                        $userPermissions->save();
+                }
+            }
+            $newUser->load('job', 'department',); // Adjust according to your relationships
+            return response()->json([
+                'user' => [
+                    "id" => $newUser->id,
+                    "username" => $newUser->username,
+                    'email' => $request->email,
+                    "profile" => $newUser->profile,
+                    "status" => $newUser->status,
+                    "department" => $this->getTranslationWithNameColumn($newUser->department, Department::class),
+                    "job" => $this->getTranslationWithNameColumn($newUser->job, ModelJob::class),
+                    "createdAt" => $newUser->created_at,
+                ],
+                'message' => __('app_translation.success'),
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $err) {
+            Log::info('User login error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function update(UpdateUserRequest $request)
+    {
+        $request->validated();
+        try {
+            // 1. Find user
+            $user = User::find($request->id);
+            if ($user) {
+                // 2. Check email
+                $email = Email::find($user->email_id);
+                if ($email && $email->value !== $request->email) {
+                    // 2.1 Email is changed
+                    // Delete old email
+                    $email->delete();
+                    // Add new email
+                    $newEmail = Email::create([
+                        "value" => $request->email
                     ]);
+                    $user->email_id = $newEmail->id;
                 }
+                // 3. Check contact
+                $this->addOrRemoveContact($user, $request);
 
-                // 4. Create User
-                $newUser = User::create([
-                    "full_name" => $request->fullName,
-                    "username" => $request->username,
-                    "email_id" => $email->id,
-                    "password" => Hash::make($request->password),
-                    "role_id" => $request->role,
-                    "job_id" => $request->job,
-                    "department_id" => $request->department,
-                    "contact_id" => $contact ? $contact->id : $contact,
-                    "profile" => null,
-                    "status" => $request->status === "true" ? true : false,
-                    "grant_permission" => $request->grant === "true" ? true : false,
-                ]);
+                // 4. Update User other attributes
+                $user->full_name = $request->fullName;
+                $user->username = $request->username;
+                $user->role_id = $request->role;
+                $user->job_id = $request->job;
+                $user->department_id = $request->department;
+                $user->status = $request->status === "true" ? true : false;
+                $user->grant_permission = $request->grant === "true" ? true : false;
+                $user->save();
 
-                // 3. Add user permissions
-                if ($request->Permission) {
-                    $data = json_decode($request->Permission, true);
-
-                    foreach ($data as $category  => $permissions) {
-                        $userPermissions = new UserPermission();
-                        $userPermissions->permission = $category;
-                        $userPermissions->user_id = $newUser->id;
-                        // If no access is givin to secction no need to add record
-                        $addModel = false;
-                        foreach ($permissions as $action => $allowed) {
-                            // Check if the value is true or false
-                            if ($allowed)
-                                $addModel = true;
-                            if ($action == "Add")
-                                $userPermissions->add = $allowed;
-                            else if ($action == "Edit")
-                                $userPermissions->edit = $allowed;
-                            else if ($action == "Delete")
-                                $userPermissions->delete = $allowed;
-                            else
-                                $userPermissions->view = $allowed;
-                        }
-                        if ($addModel)
-                            $userPermissions->save();
-                    }
-                }
-                $newUser->load('job', 'department',); // Adjust according to your relationships
                 return response()->json([
-                    'user' => [
-                        "id" => $newUser->id,
-                        "username" => $newUser->username,
-                        'email' => $request->email,
-                        "profile" => $newUser->profile,
-                        "status" => $newUser->status,
-                        "department" => $this->getTranslationWithNameColumn($newUser->department, Department::class),
-                        "job" => $this->getTranslationWithNameColumn($newUser->job, ModelJob::class),
-                        "createdAt" => $newUser->created_at,
-                    ],
                     'message' => __('app_translation.success'),
                 ], 200, [], JSON_UNESCAPED_UNICODE);
-            } else {
-                return response()->json([
-                    'message' => __('app_translation.unauthorized'),
-                ], 403, [], JSON_UNESCAPED_UNICODE);
             }
+            return response()->json([
+                'message' => __('app_translation.not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $err) {
             Log::info('User login error =>' . $err->getMessage());
             return response()->json([

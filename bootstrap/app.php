@@ -5,6 +5,7 @@ use App\Http\Middleware\api\HasAddPermissionMiddleware;
 use App\Http\Middleware\api\HasDeletePermissionMiddleware;
 use App\Http\Middleware\api\HasEditPermissionMiddleware;
 use App\Http\Middleware\api\HasViewPermissionMiddleware;
+use App\Http\Middleware\api\isNotSuperInfoMiddleware;
 use App\Http\Middleware\api\LocaleMiddleware;
 use App\Http\Middleware\api\ValidateApiKey;
 use App\Http\Middleware\web\EnsureUserIsMaster;
@@ -26,6 +27,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'hasDeletePermission' => HasDeletePermissionMiddleware::class,
                 'hasEditPermission' => HasEditPermissionMiddleware::class,
                 'hasAddPermission' => HasAddPermissionMiddleware::class,
+                'isNotSuperInfo'  => isNotSuperInfoMiddleware::class,
                 'isMaster'  => EnsureUserIsMaster::class,
                 'isAdminOrSuper'  => EnsureUserIsAdminOrSuper::class,
                 'api.key' => ValidateApiKey::class,

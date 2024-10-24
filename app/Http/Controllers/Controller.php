@@ -3,8 +3,9 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
-use App\Models\Department;
+use App\Models\Contact;
 use App\Models\Translate;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Exception;
@@ -43,6 +44,49 @@ abstract class Controller
             return  $user->role_id === RoleEnum::admin->value || $user->role_id === RoleEnum::super->value;
         } catch (Exception $err) {
             return  -1;
+        }
+    }
+    public function addOrRemoveContact(User $user, Request $request)
+    {
+        if ($request->contact === null || $request->contact === "null") {
+            if ($user->contact_id !== null) {
+                $contact = Contact::find($user->contact_id);
+                if ($contact) {
+                    $contact->delete();
+                }
+            }
+        } else {
+            $contact = Contact::where("value", '=', $request->contact)->first();
+            if (!$contact) {
+                // 2. Remove old contact
+                if ($user->contact_id !== null) {
+                    $oldContact = Contact::find($user->contact_id);
+                    if ($oldContact) {
+                        $oldContact->delete();
+                    }
+                }
+                // 1. Add new contact
+                $newContact = Contact::create([
+                    "value" => $request->contact
+                ]);
+                // 3. Update new contact
+                $user->contact_id = $newContact->id;
+            } else {
+                if ($contact->id === $user->contact_id) {
+                    // 2. Remove old contact
+                    $contact->delete();
+                    // 1. Add new contact
+                    $newContact = Contact::create([
+                        "value" => $request->contact
+                    ]);
+                    // 3. Update new contact
+                    $user->contact_id = $newContact->id;
+                } else {
+                    return response()->json([
+                        'message' => __('app_translation.contact_exist'),
+                    ], 400, [], JSON_UNESCAPED_UNICODE);
+                }
+            }
         }
     }
     public function getTableTranslations($className, $locale, $order)

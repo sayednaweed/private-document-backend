@@ -20,7 +20,6 @@ class ProfileUpdateRequest extends FormRequest
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255'],
             'name' => ['required', 'string', 'max:255'],
             'id' => ['required', 'string'],
-            'contact' => ['required', "string"],
         ];
     }
 }

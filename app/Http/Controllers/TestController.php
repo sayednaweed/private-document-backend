@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Contact;
 use App\Models\Department;
 use App\Models\Translate;
 use App\Models\User;
@@ -26,6 +27,10 @@ class TestController extends Controller
         // $sessionLocale = Session::get('locale');
 
         // return $sessionLocale;
+        $contact = Contact::where("value", '=', "")->first();
+
+        dd($contact);
+
 
         $foundUser = User::with(['permissions', 'contact', 'email', 'userRole', 'userJob', 'userDepartment'])
             ->select(
