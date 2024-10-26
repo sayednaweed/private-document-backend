@@ -30,13 +30,13 @@ trait WebAuthTrait
 
                 } else {
                     Auth::guard('user')->logout();
-                    return redirect()->route('UserLogin')->with(
+                    return redirect()->route('web.login')->with(
                         'error',
                         'Email/Password is not authorize'
                     );
                 }
             } else {
-                return redirect()->route('UserLogin')->with(
+                return redirect()->route('web.login')->with(
                     'error',
                     'Email/Password is incorrect'
                 );
