@@ -1,12 +1,16 @@
 <?php
 
+use App\Http\Middleware\api\AllowAdminOrSuperMiddleware;
+use App\Http\Middleware\api\AllowedUsersToEditMiddleware;
 use App\Http\Middleware\api\EnsureUserIsAdminOrSuper;
 use App\Http\Middleware\api\HasAddPermissionMiddleware;
 use App\Http\Middleware\api\HasDeletePermissionMiddleware;
 use App\Http\Middleware\api\HasEditPermissionMiddleware;
 use App\Http\Middleware\api\HasViewPermissionMiddleware;
-use App\Http\Middleware\api\isNotSuperInfoMiddleware;
 use App\Http\Middleware\api\LocaleMiddleware;
+use App\Http\Middleware\api\user\AccessUserCheckMiddleware;
+use App\Http\Middleware\api\user\ModifyUserCheckMiddleware;
+use App\Http\Middleware\api\user\SuperToModifyUserMiddleware;
 use App\Http\Middleware\api\ValidateApiKey;
 use App\Http\Middleware\web\EnsureUserIsMaster;
 use Illuminate\Foundation\Application;
@@ -27,9 +31,9 @@ return Application::configure(basePath: dirname(__DIR__))
                 'hasDeletePermission' => HasDeletePermissionMiddleware::class,
                 'hasEditPermission' => HasEditPermissionMiddleware::class,
                 'hasAddPermission' => HasAddPermissionMiddleware::class,
-                'isNotSuperInfo'  => isNotSuperInfoMiddleware::class,
-                'isMaster'  => EnsureUserIsMaster::class,
-                'isAdminOrSuper'  => EnsureUserIsAdminOrSuper::class,
+                'allowAdminOrSuper'  => AllowAdminOrSuperMiddleware::class,
+                'isSuper'  => EnsureUserIsMaster::class,
+                'accessUserCheck'  => AccessUserCheckMiddleware::class,
                 'api.key' => ValidateApiKey::class,
             ]);
     })

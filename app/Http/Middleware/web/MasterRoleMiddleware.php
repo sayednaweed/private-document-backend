@@ -20,7 +20,7 @@ class MasterRoleMiddleware
         if (Auth::user()) {
             $role =  Auth::user()->role_id;
 
-            if ($role == RoleEnum::master->value) {
+            if ($role == RoleEnum::super->value) {
                 return $next($request);
             }
             abort(403, 'Unauthorized action.');

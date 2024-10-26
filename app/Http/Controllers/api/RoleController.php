@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Role;
 use Exception;
@@ -13,13 +14,8 @@ class RoleController extends Controller
     public function roles(Request $request)
     {
         try {
-            $user = $request->user();
-            if ($this->isAdminOrSuper($user))
-                return response()->json(Role::select("name", 'id', 'created_at as createdAt')->get());
-            else
-                return response()->json([
-                    'message' => __('app_translation.unauthorized'),
-                ], 403, [], JSON_UNESCAPED_UNICODE);
+            $excludedIds = [RoleEnum::super->value];
+            return response()->json(Role::whereNotIn('id', $excludedIds)->select("name", 'id', 'created_at as createdAt')->get());
         } catch (Exception $err) {
             Log::info('User login error =>' . $err->getMessage());
             return response()->json([

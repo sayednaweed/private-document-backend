@@ -4,7 +4,7 @@ namespace App\Http\Requests\user;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ChangePasswordRequest extends FormRequest
+class UpdateProfilePasswordRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.

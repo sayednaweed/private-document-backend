@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Email;
@@ -10,13 +11,12 @@ use App\Models\User;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
-use App\Enums\PermissionEnum;
+use App\Http\Requests\user\UpdateUserPasswordRequest;
 use App\Http\Requests\user\UpdateUserRequest;
 use App\Http\Requests\UserRegisterRequest;
 use App\Models\Contact;
 use App\Models\UserPermission;
 use Illuminate\Support\Facades\Hash;
-use Mockery\Undefined;
 
 class UserController extends Controller
 {
@@ -206,9 +206,12 @@ class UserController extends Controller
             $email = Email::create([
                 "value" => $request->email
             ]);
-            $contact = Contact::create([
-                "value" => $request->contact
-            ]);
+            $contact = null;
+            if ($request->contact) {
+                $contact = Contact::create([
+                    "value" => $request->contact
+                ]);
+            }
             // 3. Create User
             $newUser = User::create([
                 "full_name" => $request->fullName,
@@ -276,8 +279,8 @@ class UserController extends Controller
     {
         $request->validated();
         try {
-            // 1. Find user
-            $user = User::find($request->id);
+            // 1. User is passed from middleware
+            $user = $request->get('validatedUser');
             if ($user) {
                 // 2. Check email
                 $email = Email::find($user->email_id);
@@ -375,6 +378,28 @@ class UserController extends Controller
             Log::info('Profile update error =>' . $err->getMessage());
             return response()->json([
                 'message' => __('app_translation.server_error'),
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function changePassword(UpdateUserPasswordRequest $request)
+    {
+        $payload = $request->validated();
+        try {
+            $user = $request->get('validatedUser');
+            if ($user) {
+
+                return response()->json([
+                    'message' => __('app_translation.success'),
+                ], 200, [], JSON_UNESCAPED_UNICODE);
+            } else {
+                return response()->json([
+                    'message' => __('app_translation.failed'),
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
+        } catch (Exception $err) {
+            Log::info('emailExist error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }

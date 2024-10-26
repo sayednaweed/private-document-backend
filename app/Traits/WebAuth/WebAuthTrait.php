@@ -21,7 +21,7 @@ trait WebAuthTrait
                 'password' => $request->password
             ], $request->get('remember'))) {
                 $role =  Auth::user()->role_id;
-                if ($role == RoleEnum::master->value) {
+                if ($role == RoleEnum::super->value) {
 
                     // return view('keygenerator.generatekey',['role'=>$role]);
 

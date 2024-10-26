@@ -3,35 +3,27 @@
 namespace App\Http\Controllers\api;
 
 use App\Enums\LanguageEnum;
-use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\job\JobStoreRequest;
 use App\Models\ModelJob;
 use App\Models\Translate;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 
 class JobController extends Controller
 {
-    public function jobs(Request $request)
+    public function jobs()
     {
         try {
-            $user = $request->user();
-            if ($this->isAdminOrSuper($user)) {
-                $locale = App::getLocale();
-                $tr = [];
-                if ($locale === LanguageEnum::default->value)
-                    $tr =  ModelJob::select("name", 'id', 'created_at as createdAt')->orderBy('id', 'desc')->get();
-                else {
-                    $tr = $this->getTableTranslations(ModelJob::class, $locale, 'desc');
-                }
-                return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
-            } else
-                return response()->json([
-                    'message' => __('app_translation.unauthorized'),
-                ], 403, [], JSON_UNESCAPED_UNICODE);
+            $locale = App::getLocale();
+            $tr = [];
+            if ($locale === LanguageEnum::default->value)
+                $tr =  ModelJob::select("name", 'id', 'created_at as createdAt')->orderBy('id', 'desc')->get();
+            else {
+                $tr = $this->getTableTranslations(ModelJob::class, $locale, 'desc');
+            }
+            return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $err) {
             Log::info('User login error =>' . $err->getMessage());
             return response()->json([

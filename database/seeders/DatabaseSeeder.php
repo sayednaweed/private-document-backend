@@ -33,9 +33,6 @@ class DatabaseSeeder extends Seeder
         $email =  Email::factory()->create([
             "value" => "super@admin.com"
         ]);
-        $email1 =  Email::factory()->create([
-            "value" => "123@gmail.com"
-        ]);
         Role::factory()->create([
             "id" => RoleEnum::super,
             "name" => "super"
@@ -57,15 +54,8 @@ class DatabaseSeeder extends Seeder
             "id" => RoleEnum::external,
             "name" => "external"
         ]);
-        Role::factory()->create([
-            "id" => RoleEnum::master,
-            "name" => "master"
-        ]);
         $contact =  Contact::factory()->create([
             "value" => "+93785764809"
-        ]);
-        $contact1 =  Contact::factory()->create([
-            "value" => "+93780000000"
         ]);
         $job =  ModelJob::factory()->create([
             "name" => "Administrator",

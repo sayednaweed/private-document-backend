@@ -8,29 +8,22 @@ use App\Http\Requests\department\DepartmentStoreRequest;
 use App\Models\Department;
 use App\Models\Translate;
 use Exception;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
 
 class DepartmentController extends Controller
 {
-    public function departments(Request $request)
+    public function departments()
     {
         try {
-            $user = $request->user();
-            if ($this->isAdminOrSuper($user)) {
-                $locale = App::getLocale();
-                $tr = [];
-                if ($locale === LanguageEnum::default->value)
-                    $tr =  Department::select("name", 'id', 'created_at as createdAt')->orderBy('id', 'desc')->get();
-                else {
-                    $tr = $this->getTableTranslations(Department::class, $locale, 'desc');
-                }
-                return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
-            } else
-                return response()->json([
-                    'message' => __('app_translation.unauthorized'),
-                ], 403, [], JSON_UNESCAPED_UNICODE);
+            $locale = App::getLocale();
+            $tr = [];
+            if ($locale === LanguageEnum::default->value)
+                $tr =  Department::select("name", 'id', 'created_at as createdAt')->orderBy('id', 'desc')->get();
+            else {
+                $tr = $this->getTableTranslations(Department::class, $locale, 'desc');
+            }
+            return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $err) {
             Log::info('User login error =>' . $err->getMessage());
             return response()->json([

@@ -9,5 +9,4 @@ enum RoleEnum: int
     case admin = 2;
     case ngo = 3;
     case super = 4;
-    case master = 6;
 }

@@ -37,15 +37,6 @@ abstract class Controller
         }
         return null;
     }
-    public function isAdminOrSuper($user)
-    {
-        try {
-            // 1. If storage not exist create it.
-            return  $user->role_id === RoleEnum::admin->value || $user->role_id === RoleEnum::super->value;
-        } catch (Exception $err) {
-            return  -1;
-        }
-    }
     public function addOrRemoveContact(User $user, Request $request)
     {
         if ($request->contact === null || $request->contact === "null") {

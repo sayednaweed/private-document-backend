@@ -6,8 +6,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 
 use App\Http\Requests\ProfileUpdateRequest;
-use App\Http\Requests\User\ChangePasswordRequest;
-use App\Models\Contact;
+use App\Http\Requests\user\UpdateProfilePasswordRequest;
 use App\Models\Email;
 use App\Models\User;
 use Exception;
@@ -105,7 +104,7 @@ class ProfileController extends Controller
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }
-    public function changePassword(ChangePasswordRequest $request)
+    public function changePassword(UpdateProfilePasswordRequest $request)
     {
         $payload = $request->validated();
 
