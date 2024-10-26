@@ -12,7 +12,7 @@ class Destination extends Model
     protected $fillable = ['name','color'];
 
 
-    public function destinationtype()
+    public function destinationType()
     {
         return $this->belongsTo(DestinationType::class);
     }

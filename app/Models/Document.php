@@ -63,10 +63,10 @@ class Document extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function documentdestination(){
+    public function documentDestination(){
         return $this->hasMany(DocumentDestination::class);
     }
-    public function documentdestinationnofeed(){
+    public function documentDestinationNoFeed(){
         return $this->hasMany(DocumentDestinationNoFeed::class);
     }
 
