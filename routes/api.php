@@ -22,4 +22,5 @@ require __DIR__ . '/api/media.php';
 require __DIR__ . '/api/notification.php';
 require __DIR__ . '/api/profile.php';
 require __DIR__ . '/api/application.php';
+require __DIR__ . '/api/app/documents.php';
 // require __DIR__ . '/api/log.php';

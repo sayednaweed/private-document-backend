@@ -41,19 +41,8 @@ class DatabaseSeeder extends Seeder
             "id" => RoleEnum::admin,
             "name" => "admin"
         ]);
-        Role::factory()->create([
-            "id" => RoleEnum::ngo,
-            "name" => "ngo"
-        ]);
-        Role::factory()->create([
-            "id" => RoleEnum::internal,
-            "name" => "internal"
-
-        ]);
-        Role::factory()->create([
-            "id" => RoleEnum::external,
-            "name" => "external"
-        ]);
+     
+      
         $contact =  Contact::factory()->create([
             "value" => "+93785764809"
         ]);
