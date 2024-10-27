@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Log;
 
 class RoleController extends Controller
 {
-    public function roles(Request $request)
+    public function roles()
     {
         try {
             $excludedIds = [RoleEnum::super->value];

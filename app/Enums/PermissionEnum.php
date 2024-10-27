@@ -9,4 +9,6 @@ enum PermissionEnum: string
     case reports = "reports";
     case settings = "settings";
     case users = "users";
+    case documents = "documents";
+    case audit = "audit";
 }

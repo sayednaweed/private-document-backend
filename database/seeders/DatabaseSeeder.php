@@ -41,19 +41,6 @@ class DatabaseSeeder extends Seeder
             "id" => RoleEnum::admin,
             "name" => "admin"
         ]);
-        Role::factory()->create([
-            "id" => RoleEnum::ngo,
-            "name" => "ngo"
-        ]);
-        Role::factory()->create([
-            "id" => RoleEnum::internal,
-            "name" => "internal"
-
-        ]);
-        Role::factory()->create([
-            "id" => RoleEnum::external,
-            "name" => "external"
-        ]);
         $contact =  Contact::factory()->create([
             "value" => "+93785764809"
         ]);
@@ -84,6 +71,8 @@ class DatabaseSeeder extends Seeder
         $chart = 'public/icons/chart.svg';
         $settings = 'public/icons/settings.svg';
         $logs = 'public/icons/logs.svg';
+        $audit = 'public/icons/audit.svg';
+        $documents = 'public/icons/documents.svg';
         Permission::factory()->create([
             "name" => "dashboard",
             "icon" => $dashboard,
@@ -92,7 +81,7 @@ class DatabaseSeeder extends Seeder
         Permission::factory()->create([
             "name" => "users",
             "icon" => $users,
-            "priority" => 2
+            "priority" => 3
         ]);
         Permission::factory()->create([
             "name" => "settings",
@@ -102,12 +91,22 @@ class DatabaseSeeder extends Seeder
         Permission::factory()->create([
             "name" => "reports",
             "icon" => $chart,
-            "priority" => 3
+            "priority" => 5
         ]);
         Permission::factory()->create([
             "name" => "logs",
             "icon" => $logs,
-            "priority" => 5
+            "priority" => 6
+        ]);
+        Permission::factory()->create([
+            "name" => "audit",
+            "icon" => $audit,
+            "priority" => 7
+        ]);
+        Permission::factory()->create([
+            "name" => "documents",
+            "icon" => $documents,
+            "priority" => 2
         ]);
         UserPermission::factory()->create([
             "view" => true,
@@ -148,49 +147,25 @@ class DatabaseSeeder extends Seeder
             "add" => true,
             "user_id" => 1,
             "permission" => "logs"
+        ]);
+        UserPermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "user_id" => 1,
+            "permission" => "audit"
+        ]);
+        UserPermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "user_id" => 1,
+            "permission" => "documents"
         ]);
 
-        // 
-        RolePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "role" => RoleEnum::super,
-            "permission" => "dashboard"
-        ]);
-        RolePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "role" => RoleEnum::super,
-            "permission" => "users"
-        ]);
-        RolePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "role" => RoleEnum::super,
-            "permission" => "settings"
-        ]);
-        RolePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "role" => RoleEnum::super,
-            "permission" => "reports"
-        ]);
-        RolePermission::factory()->create([
-            "view" => true,
-            "edit" => true,
-            "delete" => true,
-            "add" => true,
-            "role" => RoleEnum::super,
-            "permission" => "logs"
-        ]);
+        $this->rolePermission();
 
         $this->countries();
     }
@@ -1232,6 +1207,107 @@ class DatabaseSeeder extends Seeder
                 }
             }
         }
+    }
+    public function rolePermission()
+    {
+        // Super permission
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "dashboard"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "users"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "settings"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "reports"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "logs"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "audit"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::super,
+            "permission" => "documents"
+        ]);
+        // Admin permission
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::admin,
+            "permission" => "dashboard"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::admin,
+            "permission" => "users"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::admin,
+            "permission" => "settings"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::admin,
+            "permission" => "reports"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::admin,
+            "permission" => "documents"
+        ]);
     }
 
     // Add list of districts here

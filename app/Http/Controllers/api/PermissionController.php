@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api;
 
 use App\Http\Controllers\Controller;
+use App\Models\RolePermission;
 use App\Models\UserPermission;
 use Exception;
 use Illuminate\Http\Request;
@@ -10,13 +11,13 @@ use Illuminate\Support\Facades\Log;
 
 class PermissionController extends Controller
 {
-    public function permissions(Request $request)
+    public function permissions($id, Request $request)
     {
         $userPermissions = [];
         try {
             $user = $request->user();
             if ($user->grant_permission) {
-                $userPermissions = UserPermission::where("user_id", '=', $user->id)->select("permission as name")->get();
+                $userPermissions = RolePermission::where("role", '=', $id)->select("permission as name")->get();
             } else {
                 return response()->json([
                     'message' => __('app_translation.unauthorized'),

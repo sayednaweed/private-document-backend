@@ -10,10 +10,10 @@ use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable;
 use ESolution\DBEncryption\Traits\EncryptedAttribute;
+use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable implements Auditable
 {
-    use HasFactory, Notifiable, HasApiTokens;
     use HasFactory, Notifiable, HasApiTokens, EncryptedAttribute;
     use \OwenIt\Auditing\Auditable;
     /**
