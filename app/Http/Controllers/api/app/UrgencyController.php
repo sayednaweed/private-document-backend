@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Urgency;
 
 class UrgencyController extends Controller
 {
@@ -13,6 +14,7 @@ class UrgencyController extends Controller
     public function index()
     {
         //
+    return     Urgency::all();
     }
 
     /**
@@ -29,6 +31,16 @@ class UrgencyController extends Controller
     public function store(Request $request)
     {
         //
+        $request->validate([
+            'name' => 'required|string'
+        ]);
+
+        Urgency::create([
+            'name' => $request->name,
+           
+    ]);
+    return response()->json('Successfuly Add Urgency Type', 200);
+
     }
 
     /**

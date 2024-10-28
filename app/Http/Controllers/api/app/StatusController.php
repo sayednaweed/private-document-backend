@@ -4,6 +4,7 @@ namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Status;
 
 class StatusController extends Controller
 {
@@ -13,6 +14,7 @@ class StatusController extends Controller
     public function index()
     {
         //
+    return     Status::all();
     }
 
     /**
@@ -29,6 +31,20 @@ class StatusController extends Controller
     public function store(Request $request)
     {
         //
+        // return $request->color;
+        $request->validate([
+            'name' => 'required|string',
+            'color' => 'required',
+
+        ]);
+
+        Status::create([
+            'name' => $request->name,
+            'color' => $request->color,
+        ]);
+
+     return response()->json('Successfuly Add Status', 200);
+        
     }
 
     /**
