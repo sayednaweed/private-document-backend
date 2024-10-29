@@ -17,6 +17,8 @@ use App\Http\Requests\UserRegisterRequest;
 use App\Models\Contact;
 use App\Models\UserPermission;
 use Illuminate\Support\Facades\Hash;
+use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -426,6 +428,37 @@ class UserController extends Controller
             Log::info('Profile update error =>' . $err->getMessage());
             return response()->json([
                 'message' => __('app_translation.server_error'),
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function userCount()
+    {
+        try {
+            // Define a cache key
+            $cacheKey = 'user_counts_' . Carbon::today()->toDateString();
+
+            // Try to get the data from the cache
+            $counts = Cache::remember($cacheKey, 2, function () {
+                return [
+                    'userCount' => User::count(),
+                    'todayCount' => User::whereDate('created_at', Carbon::today())->count(),
+                    'activeUserCount' => User::where('status', true)->count(),
+                    'inActiveUserCount' => User::where('status', false)->count(),
+                ];
+            });
+
+            return response()->json([
+                'counts' => [
+                    "total" => $counts['userCount'],
+                    "todayTotal" => $counts['todayCount'],
+                    "active" => $counts['activeUserCount'],
+                    "inActive" => $counts['inActiveUserCount']
+                ],
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $err) {
+            Log::info('recordCount error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
     }

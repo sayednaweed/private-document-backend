@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('documents', function (Blueprint $table) {
             $table->id();
-            $table->string('document_number',64);
+            $table->string('document_number', 64);
             $table->string('summary');
             $table->string('muqam_statement');
             $table->string('qaid_warida_number');
@@ -30,19 +30,19 @@ return new class extends Migration
             $table->foreign('status_id')->references('id')->on('statuses')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('urgency_id');
+            $table->unsignedBigInteger('urgency_id');
             $table->foreign('urgency_id')->references('id')->on('urgencies')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('source_id');
+            $table->unsignedBigInteger('source_id');
             $table->foreign('source_id')->references('id')->on('sources')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('scan_id')->unique();
+            $table->unsignedBigInteger('scan_id')->unique();
             $table->foreign('scan_id')->references('id')->on('scans')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('reciever_user_id');
+            $table->unsignedBigInteger('reciever_user_id');
             $table->foreign('reciever_user_id')->references('id')->on('users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');

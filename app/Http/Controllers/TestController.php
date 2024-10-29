@@ -2,18 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use Exception;
+use Carbon\Carbon;
+use App\Models\User;
 use App\Enums\RoleEnum;
 use App\Models\Contact;
-use App\Models\Department;
 use App\Models\Translate;
-use App\Models\User;
-use App\Models\UserPermission;
-use Exception;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Session;
+use App\Models\Department;
 use Illuminate\Http\Request;
+use App\Models\UserPermission;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Session;
+use Illuminate\Support\Facades\Storage;
 
 class TestController extends Controller
 {
@@ -29,19 +30,18 @@ class TestController extends Controller
         // $sessionLocale = Session::get('locale');
 
         // return $sessionLocale;
-        $user = User::create([
-            'full_name' => 'Sayed Naweed Sayedy',
-            'username' => 'super@admin.com',
-            'email_id' =>  1,
-            'password' =>  Hash::make("123123123"),
-            'status' =>  true,
-            'grant_permission' =>  true,
-            'role_id' =>  RoleEnum::super->value,
-            'contact_id' =>  null,
-            'job_id' =>  1,
-            'department_id' =>  1,
-        ]);
-        return dd($user);
+        $userCount = User::count();
+        $todayCount = User::whereDate('created_at', Carbon::today())->count();
+        $activeUserCount = User::where('status', true)->count();
+        $inActiveUserCount = User::where('status', false)->count();
+        return response()->json([
+            'counts' => [
+                "active" => $userCount,
+                "inActive" => $todayCount,
+                "total" => $activeUserCount,
+                "todayTotal" => $inActiveUserCount
+            ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
 
 
         // $foundUser = User::with(['permissions', 'contact', 'email', 'userRole', 'userJob', 'userDepartment'])
