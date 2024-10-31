@@ -127,6 +127,20 @@ class UserController extends Controller
                 $authUser = $request->user()->load('permissions');
                 // 2. Combine permissions of user1 and user2
                 $combinedPermissions = $foundUser->permissions->concat($authUser->permissions)->unique('permission');
+                $concateArr = [];
+                foreach ($combinedPermissions as $permission) {
+                    $actualUser = $permission->user_id == $foundUser->id;
+                    array_push($concateArr, [
+                        'permission' => $permission->permission,
+                        'view' => $actualUser ? $permission->view : false,
+                        'add' => $actualUser ? $permission->add : false,
+                        'delete' => $actualUser ? $permission->delete : false,
+                        'edit' => $actualUser ? $permission->edit : false,
+                        'id' => $permission->id,
+                    ]);
+                }
+                $combinedPermissions = $concateArr;
+
                 return response()->json([
                     "user" => [
                         "id" => $foundUser->id,
@@ -434,25 +448,12 @@ class UserController extends Controller
     public function userCount()
     {
         try {
-            // Define a cache key
-            $cacheKey = 'user_counts_' . Carbon::today()->toDateString();
-
-            // Try to get the data from the cache
-            $counts = Cache::remember($cacheKey, 2, function () {
-                return [
-                    'userCount' => User::count(),
-                    'todayCount' => User::whereDate('created_at', Carbon::today())->count(),
-                    'activeUserCount' => User::where('status', true)->count(),
-                    'inActiveUserCount' => User::where('status', false)->count(),
-                ];
-            });
-
             return response()->json([
                 'counts' => [
-                    "total" => $counts['userCount'],
-                    "todayTotal" => $counts['todayCount'],
-                    "active" => $counts['activeUserCount'],
-                    "inActive" => $counts['inActiveUserCount']
+                    "userCount" => User::count(),
+                    "todayCount" => User::whereDate('created_at', Carbon::today())->count(),
+                    "activeUserCount" => User::where('status', true)->count(),
+                    "inActiveUserCount" =>  User::where('status', false)->count()
                 ],
             ], 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $err) {
@@ -461,5 +462,51 @@ class UserController extends Controller
                 'message' => __('app_translation.server_error')
             ], 500, [], JSON_UNESCAPED_UNICODE);
         }
+    }
+    public function updatePermission(Request $request)
+    {
+        $request->validate([
+            "user_id" => "required"
+        ]);
+
+        try {
+            if ($request->Permission != "undefined") {
+                $user = User::find($request->user_id);
+                // 1. Check if it is super user ID 1 do not allow to change permissions
+                if ($user === null || $user->id == "1")
+                    return response()->json(['message' => "You are not authorized!"], 403);
+
+                // 2. Delete all permissions
+                UserPermission::where("user_id", "=", $request->user_id)->delete();
+                // 3. Add permissions again
+                $data = json_decode($request->permission, true);
+                foreach ($data as $category  => $permissions) {
+                    $userPermissions = new UserPermission;
+                    $userPermissions->permission = $category;
+                    $userPermissions->user_id = $request->user_id;
+                    // If no access is givin to secction no need to add record
+                    $addModel = false;
+                    foreach ($permissions as $action => $allowed) {
+                        // Check if the value is true or false
+                        if ($allowed == "true")
+                            $addModel = true;
+                        if ($action == "add")
+                            $userPermissions->Add = $allowed;
+                        else if ($action == "edit")
+                            $userPermissions->edit = $allowed;
+                        else if ($action == "delete")
+                            $userPermissions->delete = $allowed;
+                        else if ($action == "view")
+                            $userPermissions->view = $allowed;
+                    }
+                    if ($addModel)
+                        $userPermissions->save();
+                }
+            }
+        } catch (Exception $err) {
+            Log::info('User change permissions error =>' . $err->getMessage());
+            return response()->json(['message' => "Something went wrong please try again later!"], 500);
+        }
+        return response()->json("Success");
     }
 }

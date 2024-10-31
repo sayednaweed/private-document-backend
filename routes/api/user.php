@@ -15,5 +15,6 @@ Route::prefix('v1')->middleware(['api.key', "auth:sanctum"])->group(function () 
     Route::post('/user/update', [UserController::class, 'update'])->middleware(["hasEditPermission:" . PermissionEnum::users->value, 'accessUserCheck']);
     Route::post('/user/store', [UserController::class, 'store'])->middleware(["hasViewPermission:" . PermissionEnum::users->value]);
     Route::delete('/user/{id}', [UserController::class, 'destroy'])->middleware(["hasDeletePermission:" . PermissionEnum::users->value]);
+    Route::post('/user/update/permission', [UserController::class, 'updatePermission'])->middleware(['hasGrantPermission', "hasEditPermission:" . PermissionEnum::users->value]);
     Route::post('/user/email-exist', [UserController::class, "emailExist"]);
 });
