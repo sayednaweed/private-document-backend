@@ -9,6 +9,12 @@ class UserPermission extends Model
 {
     use HasFactory;
     protected $guarded = [];
+    protected $casts = [
+        'view' => 'boolean',
+        'edit' => 'boolean',
+        'delete' => 'boolean',
+        'add' => 'boolean',
+    ];
 
     public function user()
     {

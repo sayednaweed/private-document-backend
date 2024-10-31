@@ -6,6 +6,7 @@ use App\Http\Middleware\api\EnsureUserIsAdminOrSuper;
 use App\Http\Middleware\api\HasAddPermissionMiddleware;
 use App\Http\Middleware\api\HasDeletePermissionMiddleware;
 use App\Http\Middleware\api\HasEditPermissionMiddleware;
+use App\Http\Middleware\api\HasGrantPermissionMiddleware;
 use App\Http\Middleware\api\HasViewPermissionMiddleware;
 use App\Http\Middleware\api\LocaleMiddleware;
 use App\Http\Middleware\api\user\AccessUserCheckMiddleware;
@@ -31,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'hasDeletePermission' => HasDeletePermissionMiddleware::class,
                 'hasEditPermission' => HasEditPermissionMiddleware::class,
                 'hasAddPermission' => HasAddPermissionMiddleware::class,
+                'hasGrantPermission' => HasGrantPermissionMiddleware::class,
                 'allowAdminOrSuper'  => AllowAdminOrSuperMiddleware::class,
                 'isSuper'  => EnsureUserIsMaster::class,
                 'accessUserCheck'  => AccessUserCheckMiddleware::class,
