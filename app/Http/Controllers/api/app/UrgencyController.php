@@ -11,10 +11,10 @@ class UrgencyController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function urgencies()
     {
         //
-    return     Urgency::all();
+    return     Urgency::select('id','name')->get();
     }
 
     /**

@@ -66,9 +66,10 @@ class Document extends Model  implements Auditable
         return $this->belongsTo(User::class);
     }
 
-    public function documentDestination(){
-        return $this->hasMany(DocumentDestination::class);
-    }
+    public function documentDestination()
+{
+    return $this->hasMany(DocumentDestination::class);
+}
     public function documentDestinationNoFeed(){
         return $this->hasMany(DocumentDestinationNoFeed::class);
     }

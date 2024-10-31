@@ -11,10 +11,10 @@ class DestinationTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function destinationTypes()
     {
         //
-    return     DestinationType::all();
+    return     DestinationType::select('id','name')->get();
     }
 
     /**

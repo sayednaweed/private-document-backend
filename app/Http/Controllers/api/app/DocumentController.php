@@ -16,14 +16,29 @@ class DocumentController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function documents()
     {
         //
+        $documents = Document::with([
+                'status:id,name,color',
+                'source:id,name',
+                'urgency:id,name',
+                'type:id,name',
+            ])->select(['id', 'document_number', 'document_date', 'status_id', 'source_id', 'urgency_id', 'type_id'])
+            ->get();
 
-    
-        // Eager load the related models and select the required fields
-        return Document::with(['status:id,name,color','source:id,name', 'urgency:id,name', 'type:id,name'])
-        ->get();
+            // Append the first deadline from `documentDestination` table
+            $documents->each(function ($document) {
+                $document->deadline = $document->documentDestination()->orderBy('id')->value('deadline');
+            });
+
+            return $documents;
+
+}
+
+
+public function document ()
+    {
 
 
 }
@@ -113,6 +128,12 @@ class DocumentController extends Controller
      */
     public function destroy(string $id)
     {
+        
+
         //
+
+        
+
+        
     }
 }

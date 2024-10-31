@@ -11,11 +11,11 @@ class DocumentTypeController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function documentTypes()
     {
         //
 
-      return   Type::all();
+      return   Type::select('id','name')->get();
         
     }
 

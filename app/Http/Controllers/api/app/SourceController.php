@@ -12,11 +12,13 @@ class SourceController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function sources()
     {
         //
 
-      return   Source::all();
+      return   Source::select('id',
+                'name'
+              )->get();
 
     }
 

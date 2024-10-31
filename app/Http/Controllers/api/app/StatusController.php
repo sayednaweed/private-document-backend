@@ -11,10 +11,10 @@ class StatusController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function statuses()
     {
         //
-    return     Status::all();
+    return     Status::select('id','name','color')->get();
     }
 
     /**
