@@ -9,7 +9,7 @@ class Destination extends Model
     //
 
 
-    protected $fillable = ['name','color','destination_type_id'];
+    protected $fillable = ['name','color'];
 
 
     public function destinationType()

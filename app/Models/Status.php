@@ -8,5 +8,5 @@ class Status extends Model
 {
     //
 
-    protected $fillable = ['id', 'name','color']; 
+    protected $fillable = ['id', 'name']; 
 }

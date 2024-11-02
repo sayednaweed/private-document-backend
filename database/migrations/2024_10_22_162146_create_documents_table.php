@@ -15,13 +15,13 @@ return new class extends Migration
             $table->id();
             $table->string('document_number', 64);
             $table->string('summary');
-            $table->string('muqam_statement')->nullable();
+            $table->string('muqam_statement');
             $table->string('qaid_warida_number');
-            $table->string('qaid_sadira_number')->nullable();
-            $table->string('saved_file')->nullable()->comment('info document save in which files');
+            $table->string('qaid_sadira_number');
+            $table->string('saved_file');
             $table->date('document_date');
-            $table->date('qaid_warida_date');
-            $table->date('qaid_sadira_date')->nullable();
+            $table->date('recieved_date_by_us');
+            $table->date('qaid_sadira_date');
             $table->unsignedBigInteger('type_id');
             $table->foreign('type_id')->references('id')->on('types')
                 ->onUpdate('cascade')

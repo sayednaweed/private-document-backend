@@ -4,17 +4,15 @@ namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use App\Models\DestinationType;
 
 class DestinationTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function destinationTypes()
+    public function index()
     {
         //
-    return     DestinationType::select('id','name')->get();
     }
 
     /**
@@ -31,15 +29,6 @@ class DestinationTypeController extends Controller
     public function store(Request $request)
     {
         //
-        $request->validate([
-            'name' => 'required|string'
-        ]);
-        DestinationType::create([
-            'name' => $request->name
-        ]);
-
-        return response()->json('Successfully add Destination Type', 200);
-
     }
 
     /**
