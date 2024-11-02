@@ -4,15 +4,18 @@ namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Type;
 
 class DocumentTypeController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function documentTypes()
     {
         //
+
+        return   Type::select('id', 'name')->get();
     }
 
     /**
@@ -28,8 +31,22 @@ class DocumentTypeController extends Controller
      */
     public function store(Request $request)
     {
-        //
+
+        $validatedData = $request->validate([
+            'name' => 'required|string',
+        ]);
+
+        // Create a new type with the validated data
+        $type = Type::create($validatedData);
+
+        // Return a JSON response with success message
+        return response()->json([
+            'message' => 'Type created successfully.',
+            'data' => $type,
+        ], 201);
     }
+    //
+
 
     /**
      * Display the specified resource.
