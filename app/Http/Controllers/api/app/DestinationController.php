@@ -4,15 +4,23 @@ namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Models\Destination;
 
 class DestinationController extends Controller
 {
     /**
      * Display a listing of the resource.
      */
-    public function index()
+    public function destinations()
     {
+
         //
+
+        $destinations = Destination::with('destinationType:id,name')
+            ->select(['id', 'name', 'color', 'destination_type_id'])
+            ->get();
+
+        return $destinations;
     }
 
     /**
@@ -29,6 +37,22 @@ class DestinationController extends Controller
     public function store(Request $request)
     {
         //
+
+        $request->validate([
+            'name' => 'required|string',
+            'color' => 'required|string',
+            'destination_type_id' => 'required|integer'
+
+        ]);
+
+        Destination::create([
+            'name' => $request->name,
+            'color' => $request->color,
+            'destination_type_id' => $request->destination_type_id
+        ]);
+
+
+        return response()->json('Successfully Add the destination', 200);
     }
 
     /**
