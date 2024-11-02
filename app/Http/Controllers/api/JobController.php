@@ -48,7 +48,11 @@ class JobController extends Controller
                 if ($locale === LanguageEnum::default->value) {
                     return response()->json([
                         'message' => __('app_translation.success'),
-                        'job' => $job,
+                        'job' => [
+                            "id" => $job->id,
+                            "name" => $job->name,
+                            "createdAt" => $job->created_at
+                        ],
                     ], 200, [], JSON_UNESCAPED_UNICODE);
                 } else if ($locale === LanguageEnum::pashto->value) {
                     return response()->json([

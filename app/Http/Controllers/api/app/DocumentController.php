@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\app;
 
 use App\Http\Controllers\Controller;
+use App\Models\Document;
 use Illuminate\Http\Request;
 
 class DocumentController extends Controller
@@ -14,21 +15,19 @@ class DocumentController extends Controller
     {
         //
 
-    
+
         // Eager load the related models and select the required fields
         return Document::with(['status:id,name', 'urgency:id,name', 'type:id,name'])->get()
-    ->map(function ($document) {
-        return [
-            'id' => $document->id,
-            'status_name' => optional($document->status)->name,
-            'urgency_name' => optional($document->urgency)->name,
-            'type_name' => optional($document->type)->name,
-        
-        ];
-    });
+            ->map(function ($document) {
+                return [
+                    'id' => $document->id,
+                    'status_name' => optional($document->status)->name,
+                    'urgency_name' => optional($document->urgency)->name,
+                    'type_name' => optional($document->type)->name,
 
-
-}
+                ];
+            });
+    }
 
     /**
      * Show the form for creating a new resource.

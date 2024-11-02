@@ -48,7 +48,11 @@ class DepartmentController extends Controller
                 if ($locale === LanguageEnum::default->value) {
                     return response()->json([
                         'message' => __('app_translation.success'),
-                        'department' => $department,
+                        'department' => [
+                            "id" => $department->id,
+                            "name" => $department->name,
+                            "createdAt" => $department->created_at
+                        ],
                     ], 200, [], JSON_UNESCAPED_UNICODE);
                 } else if ($locale === LanguageEnum::pashto->value) {
                     return response()->json([
