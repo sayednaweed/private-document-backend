@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api;
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Models\Department;
 use App\Models\Email;
@@ -17,6 +18,7 @@ use App\Models\Contact;
 use App\Models\UserPermission;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Cache;
 
 class UserController extends Controller
 {
@@ -471,11 +473,8 @@ class UserController extends Controller
             if ($request->Permission != "undefined") {
                 $user = User::find($request->user_id);
                 // 1. Check if it is super user ID 1 do not allow to change permissions
-                if ($user === null || $user->id == "1") {
-                    return response()->json([
-                        'message' => __('app_translation.unauthorized'),
-                    ], 403, [], JSON_UNESCAPED_UNICODE);
-                }
+                if ($user === null || $user->id == "1")
+                    return response()->json(['message' => "You are not authorized!"], 403);
 
                 // 2. Delete all permissions
                 UserPermission::where("user_id", "=", $request->user_id)->delete();
@@ -505,13 +504,9 @@ class UserController extends Controller
                 }
             }
         } catch (Exception $err) {
-            Log::info('recordCount error =>' . $err->getMessage());
-            return response()->json([
-                'message' => __('app_translation.server_error')
-            ], 500, [], JSON_UNESCAPED_UNICODE);
+            Log::info('User change permissions error =>' . $err->getMessage());
+            return response()->json(['message' => "Something went wrong please try again later!"], 500);
         }
-        return response()->json([
-            'message' => __('app_translation.success'),
-        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return response()->json("Success");
     }
 }
