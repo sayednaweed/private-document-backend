@@ -20,28 +20,48 @@ class DocumentController extends Controller
     {
         //
         $documents = Document::with([
-                'status:id,name,color',
-                'source:id,name',
-                'urgency:id,name',
-                'type:id,name',
-            ])->select(['id', 'document_number', 'document_date', 'status_id', 'source_id', 'urgency_id', 'type_id'])
+            'status:id,name,color',
+            'source:id,name',
+            'urgency:id,name',
+            'type:id,name',
+        ])->select(['id', 'document_number', 'document_date', 'status_id', 'source_id', 'urgency_id', 'type_id'])
             ->get();
 
-            // Append the first deadline from `documentDestination` table
-            $documents->each(function ($document) {
-                $document->deadline = $document->documentDestination()->orderBy('id')->value('deadline');
-            });
+        // Append the first deadline from `documentDestination` table
+        $documents->each(function ($document) {
+            $document->deadline = $document->documentDestination()->orderBy('id')->value('deadline');
+        });
 
-            return $documents;
+        return $documents;
+    }
 
-}
 
-
-public function document ()
+    public function document($id)
     {
 
 
-}
+        $documentId = $id; // Replace with the specific document ID you want to load
+
+        $documents = Document::with([
+            'status:id,name,color',
+            'source:id,name',
+            'urgency:id,name',
+            'type:id,name',
+            'documentDestination' => function ($query) {
+                $query->orderBy('id'); // Optionally order the related records
+            }
+        ])
+            ->where('id', $documentId) // Filter by specific document ID
+            ->select('*') // Load all columns from the documents table
+            ->get();
+
+        // Append the first deadline from the `documentDestination` table
+        $documents->each(function ($document) {
+            $document->deadline = $document->documentDestination->first()->deadline ?? null;
+        });
+
+        return $documents;
+    }
 
     /**
      * Show the form for creating a new resource.
@@ -54,51 +74,51 @@ public function document ()
     /**
      * Store a newly created resource in storage.
      */
-     public function store(DocumentRequest $request)
+    public function store(DocumentRequest $request)
     {
 
-    $data = $request->validated();
+        $data = $request->validated();
 
-           // 1. If storage not exist create it.
-           $path = storage_path() . "/app/private/scans/";
-            // Checks directory exist if not will be created.
-            !is_dir($path) &&
-                mkdir($path, 0777, true);
-       
-            // 2. Store image in filesystem
-            $filepath;
-            $fileName =null;
-            if ($request->hasFile('scan_file')) {
-                $file = $request->file('scan_file');
-                if ($file != null) {
-                    $fileName = Str::uuid() . '.' . $file->extension();
-                    $file->move($path, $fileName);
+        // 1. If storage not exist create it.
+        $path = storage_path() . "/app/private/scans/";
+        // Checks directory exist if not will be created.
+        !is_dir($path) &&
+            mkdir($path, 0777, true);
 
-                    $filepath = "private/scans/" . $fileName;
-                }
+        // 2. Store image in filesystem
+        $filepath;
+        $fileName = null;
+        if ($request->hasFile('scan_file')) {
+            $file = $request->file('scan_file');
+            if ($file != null) {
+                $fileName = Str::uuid() . '.' . $file->extension();
+                $file->move($path, $fileName);
+
+                $filepath = "private/scans/" . $fileName;
             }
-     
-    $scan = Scan::create([
-        'initail_scan' => $filepath,
-        'muqam_scan' =>"",
-        'final_scan' =>""
+        }
 
-    ]);
+        $scan = Scan::create([
+            'initail_scan' => $filepath,
+            'muqam_scan' => "",
+            'final_scan' => ""
+
+        ]);
 
 
 
-    // Prepare document data and include scan_id
-    
-    $data['scan_id'] = $scan->id; // Set the scan_id in the data array
+        // Prepare document data and include scan_id
 
-    $document = Document::create($data);
+        $data['scan_id'] = $scan->id; // Set the scan_id in the data array
+
+        $document = Document::create($data);
 
 
         return response()->json([
             'message' => 'Document created successfully.'
-         
+
         ], 201);
-            }
+    }
     /**
      * Display the specified resource.
      */
@@ -128,12 +148,12 @@ public function document ()
      */
     public function destroy(string $id)
     {
-        
+
 
         //
 
-        
 
-        
+
+
     }
 }

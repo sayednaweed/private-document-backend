@@ -13,14 +13,14 @@ class DestinationController extends Controller
      */
     public function destinations()
     {
+
         //
 
         $destinations = Destination::with('destinationType:id,name')
-        ->select(['id', 'name', 'color', 'destination_type_id'])
-        ->get();
+            ->select(['id', 'name', 'color', 'destination_type_id'])
+            ->get();
 
         return $destinations;
-
     }
 
     /**
@@ -50,11 +50,9 @@ class DestinationController extends Controller
             'color' => $request->color,
             'destination_type_id' => $request->destination_type_id
         ]);
-        
+
 
         return response()->json('Successfully Add the destination', 200);
-
-
     }
 
     /**

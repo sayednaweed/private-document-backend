@@ -14,7 +14,7 @@ class StatusController extends Controller
     public function statuses()
     {
         //
-    return     Status::select('id','name','color')->get();
+        return     Status::select('id', 'name', 'color')->get();
     }
 
     /**
@@ -43,8 +43,7 @@ class StatusController extends Controller
             'color' => $request->color,
         ]);
 
-     return response()->json('Successfuly Add Status', 200);
-        
+        return response()->json('Successfuly Add Status', 200);
     }
 
     /**

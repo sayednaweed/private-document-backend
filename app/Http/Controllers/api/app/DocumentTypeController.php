@@ -15,8 +15,7 @@ class DocumentTypeController extends Controller
     {
         //
 
-      return   Type::select('id','name')->get();
-        
+        return   Type::select('id', 'name')->get();
     }
 
     /**
@@ -34,21 +33,20 @@ class DocumentTypeController extends Controller
     {
 
         $validatedData = $request->validate([
-        'name' => 'required|string',
-    ]);
+            'name' => 'required|string',
+        ]);
 
-    // Create a new type with the validated data
-    $type = Type::create($validatedData);
+        // Create a new type with the validated data
+        $type = Type::create($validatedData);
 
-    // Return a JSON response with success message
-    return response()->json([
-        'message' => 'Type created successfully.',
-        'data' => $type,
-    ], 201);  
+        // Return a JSON response with success message
+        return response()->json([
+            'message' => 'Type created successfully.',
+            'data' => $type,
+        ], 201);
+    }
+    //
 
-}
-        //
-    
 
     /**
      * Display the specified resource.
