@@ -8,7 +8,7 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Document;
 use App\Models\Scan;
-use Illuminate\Support\Str;
+
 
 
 class DocumentController extends Controller
@@ -19,19 +19,48 @@ class DocumentController extends Controller
     public function documents()
     {
         //
+        $documents = Document::with([
+            'status:id,name,color',
+            'source:id,name',
+            'urgency:id,name',
+            'type:id,name',
+        ])->select(['id', 'document_number', 'document_date', 'status_id', 'source_id', 'urgency_id', 'type_id'])
+            ->get();
+
+        // Append the first deadline from `documentDestination` table
+        $documents->each(function ($document) {
+            $document->deadline = $document->documentDestination()->orderBy('id')->value('deadline');
+        });
+
+        return $documents;
+    }
 
 
-        // Eager load the related models and select the required fields
-        return Document::with(['status:id,name', 'urgency:id,name', 'type:id,name'])->get()
-            ->map(function ($document) {
-                return [
-                    'id' => $document->id,
-                    'status_name' => optional($document->status)->name,
-                    'urgency_name' => optional($document->urgency)->name,
-                    'type_name' => optional($document->type)->name,
+    public function document($id)
+    {
 
-                ];
-            });
+
+        $documentId = $id; // Replace with the specific document ID you want to load
+
+        $documents = Document::with([
+            'status:id,name,color',
+            'source:id,name',
+            'urgency:id,name',
+            'type:id,name',
+            'documentDestination' => function ($query) {
+                $query->orderBy('id'); // Optionally order the related records
+            }
+        ])
+            ->where('id', $documentId) // Filter by specific document ID
+            ->select('*') // Load all columns from the documents table
+            ->get();
+
+        // Append the first deadline from the `documentDestination` table
+        $documents->each(function ($document) {
+            $document->deadline = $document->documentDestination->first()->deadline ?? null;
+        });
+
+        return $documents;
     }
 
     /**
@@ -57,7 +86,7 @@ class DocumentController extends Controller
             mkdir($path, 0777, true);
 
         // 2. Store image in filesystem
-        $filepath = null;
+        $filepath;
         $fileName = null;
         if ($request->hasFile('scan_file')) {
             $file = $request->file('scan_file');
