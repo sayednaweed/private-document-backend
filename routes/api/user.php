@@ -4,6 +4,8 @@
 use App\Enums\PermissionEnum;
 use App\Http\Controllers\api\UserController;
 use Illuminate\Support\Facades\Route;
+    // Route::get('/users/{page}', [UserController::class, "users"]);
+    // ->middleware(["hasViewPermission:" . PermissionEnum::users->value]);
 
 Route::prefix('v1')->middleware(['api.key', "auth:sanctum"])->group(function () {
     Route::get('/users/record/count', [UserController::class, "userCount"]);

@@ -27,8 +27,7 @@ class UserController extends Controller
         $users = [];
         $perPage = $request->input('per_page', 10); // Number of records per page
 
-        $query = User::with(['contact', 'email', 'job', 'department']) // Eager load relationships
-            ->select("id", "username", "profile", "status", "job_id", "department_id", 'email_id', 'contact_id', "created_at");
+        $query = User::select("id", "username", "profile", "status", "job_id", "department_id", 'email_id', 'contact_id', "created_at");
 
         // Apply date filtering conditionally
         $startDate = $request->input('filters.date.startDate');

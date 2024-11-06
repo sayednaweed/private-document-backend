@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\api\app;
 
 
-use App\Http\Requests\app\document\DocumentRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\app\document\DocumentRequest;
 use App\Models\Document;
 use App\Models\Scan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 
 
@@ -86,7 +87,7 @@ class DocumentController extends Controller
             mkdir($path, 0777, true);
 
         // 2. Store image in filesystem
-        $filepath;
+        $filepath ='';
         $fileName = null;
         if ($request->hasFile('scan_file')) {
             $file = $request->file('scan_file');

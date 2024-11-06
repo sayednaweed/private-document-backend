@@ -28,4 +28,5 @@ require __DIR__ . '/api/app/destination.php';
 require __DIR__ . '/api/app/destinationtype.php';
 require __DIR__ . '/api/app/source.php';
 require __DIR__ . '/api/app/urgency.php';
+require __DIR__ . '/api/audit.php';
 // require __DIR__ . '/api/log.php';
