@@ -23,6 +23,9 @@ class CreateAuditsTable extends Migration
             $table->bigIncrements('id');
             $table->string($morphPrefix . '_type')->nullable();
             $table->unsignedBigInteger($morphPrefix . '_id')->nullable();
+             $table->foreign($morphPrefix . '_id')->references('id')->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
             $table->string('event');
             $table->morphs('auditable');
             $table->text('old_values')->nullable();
