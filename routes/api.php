@@ -25,6 +25,7 @@ require __DIR__ . '/api/app/documents.php';
 require __DIR__ . '/api/app/documentType.php';
 require __DIR__ . '/api/template/destination.php';
 require __DIR__ . '/api/template/destinationtype.php';
+require __DIR__ . '/api/template/audit.php';
 require __DIR__ . '/api/app/source.php';
 require __DIR__ . '/api/app/status.php';
 require __DIR__ . '/api/app/urgency.php';
