@@ -2,23 +2,19 @@
 
 namespace App\Http\Controllers\api\app;
 
-
-use App\Http\Requests\app\document\DocumentRequest;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Http\Requests\app\document\DocumentStoreRequest;
 use App\Models\Document;
 use App\Models\Scan;
+use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 
 
 class DocumentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function documents()
+    public function documents(Request $request, $page)
     {
-        //
         $documents = Document::with([
             'status:id,name,color',
             'source:id,name',
@@ -38,10 +34,7 @@ class DocumentController extends Controller
 
     public function document($id)
     {
-
-
         $documentId = $id; // Replace with the specific document ID you want to load
-
         $documents = Document::with([
             'status:id,name,color',
             'source:id,name',
@@ -74,9 +67,8 @@ class DocumentController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(DocumentRequest $request)
+    public function store(DocumentStoreRequest $request)
     {
-
         $data = $request->validated();
 
         // 1. If storage not exist create it.
@@ -86,7 +78,7 @@ class DocumentController extends Controller
             mkdir($path, 0777, true);
 
         // 2. Store image in filesystem
-        $filepath;
+        $filepath = null;
         $fileName = null;
         if ($request->hasFile('scan_file')) {
             $file = $request->file('scan_file');

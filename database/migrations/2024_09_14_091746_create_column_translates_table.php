@@ -15,12 +15,12 @@ return new class extends Migration
             $table->id();
             $table->string('value');
             $table->string('column_name');
-            $table->unsignedBigInteger('ctranslable_id');
-            $table->string('ctranslable_type');
+            $table->unsignedBigInteger('translable_id');
+            $table->string('translable_type');
             $table->string('language_name');
             $table->foreign('language_name')->references('name')->on('languages')->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->index(['ctranslable_id', "language_name"]);
+            $table->index(['translable_id', "language_name", 'translable_type'], 'idx_translable_id_lang_name_type');
             $table->timestamps();
         });
     }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers\api\auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Models\Department;
+use App\Models\Destination;
 use App\Models\Email;
 use App\Models\ModelJob;
 use App\Models\User;
@@ -19,7 +19,7 @@ class AuthController extends Controller
 {
     public function user(Request $request)
     {
-        $user = $request->user()->load(['contact', 'email', 'role', 'job', 'department']);
+        $user = $request->user()->load(['contact', 'email', 'role', 'job', 'destination']);
         $userPermissions = $this->userWithPermission($user);
 
         return response()->json(array_merge([
@@ -33,7 +33,7 @@ class AuthController extends Controller
                 "grantPermission" => $user->grant_permission,
                 "role" => ["role" => $user->role->id, "name" => $user->role->name],
                 'contact' => $user->contact ? $user->contact->value : null,
-                "department" => $this->getTranslationWithNameColumn($user->department, Department::class),
+                "destination" => $this->getTranslationWithNameColumn($user->destination, Destination::class),
                 "job" => $this->getTranslationWithNameColumn($user->job, ModelJob::class),
                 "createdAt" => $user->created_at,
             ]
@@ -59,25 +59,30 @@ class AuthController extends Controller
                 $token = $user->createToken("web")->plainTextToken;
                 $userPermissions = $this->userWithPermission($user);
                 $user = $user->load(['contact', 'role']);
-                return  array_merge([
-                    "user" => [
-                        "id" => $user->id,
-                        "fullName" => $user->full_name,
-                        "username" => $user->username,
-                        'email' => $user->email ? $user->email->value : null,
-                        "profile" => $user->profile,
-                        "status" => $user->status,
-                        "grantPermission" => $user->grant_permission,
-                        "role" => ["role" => $user->role->id, "name" => $user->role->name],
-                        'contact' => $user->contact ? $user->contact->value : null,
-                        "department" => $this->getTranslationWithNameColumn($user->department, Department::class),
-                        "job" => $this->getTranslationWithNameColumn($user->job, ModelJob::class),
-                        "createdAt" => $user->created_at,
-                    ]
-                ], [
-                    "token" => $token,
-                    "permissions" => $userPermissions["permissions"],
-                ]);
+                return response()->json(
+                    array_merge([
+                        "user" => [
+                            "id" => $user->id,
+                            "fullName" => $user->full_name,
+                            "username" => $user->username,
+                            'email' => $user->email ? $user->email->value : null,
+                            "profile" => $user->profile,
+                            "status" => $user->status,
+                            "grantPermission" => $user->grant_permission,
+                            "role" => ["role" => $user->role->id, "name" => $user->role->name],
+                            'contact' => $user->contact ? $user->contact->value : null,
+                            "destination" => $this->getTranslationWithNameColumn($user->destination, Destination::class),
+                            "job" => $this->getTranslationWithNameColumn($user->job, ModelJob::class),
+                            "createdAt" => $user->created_at,
+                        ]
+                    ], [
+                        "token" => $token,
+                        "permissions" => $userPermissions["permissions"],
+                    ]),
+                    200,
+                    [],
+                    JSON_UNESCAPED_UNICODE
+                );
             }
             return response()->json([
                 "message" => "User not found!"

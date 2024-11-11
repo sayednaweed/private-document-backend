@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('document_destinations', function (Blueprint $table) {
             $table->id();
             $table->integer('step');
-            $table->integer('deadline');            
+            $table->integer('deadline');
             $table->date('send_date');
             $table->date('recieve_date');
             $table->boolean('response');
@@ -22,18 +22,11 @@ return new class extends Migration
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('destination_id');
+            $table->unsignedBigInteger('destination_id');
             $table->foreign('destination_id')->references('id')->on('destinations')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-
-
-
-
-
-
-
-
+            $table->index(['destination_id', 'document_id']);
             $table->timestamps();
         });
     }

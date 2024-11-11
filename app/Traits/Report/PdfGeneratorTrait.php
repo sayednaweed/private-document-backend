@@ -2,10 +2,10 @@
 
 namespace App\Traits\Report;
 
+use App\Models\User;
 use Mpdf\Mpdf;
 use Mpdf\Config\ConfigVariables;
 use Mpdf\Config\FontVariables;
-use App\Models\User;
 
 trait PdfGeneratorTrait
 {

@@ -3,9 +3,9 @@
 namespace App\Http\Controllers\web\generator;
 
 use App\Http\Controllers\Controller;
+use App\Models\ApiKey;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use App\Models\ApiKey;
 
 class ApiKeyController extends Controller
 {

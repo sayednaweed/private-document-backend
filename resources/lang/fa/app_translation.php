@@ -14,4 +14,5 @@ return [
     'failed' => "عملیات ناکام شد.",
     'apiloginpage' => 'این صفحه دخول برای ایجاد کلید API است',
     'not_found' => 'رکورد پیدا نشد.',
+    'destination_type_not_found' => 'نوع مقصد یافت نشد.',
 ];

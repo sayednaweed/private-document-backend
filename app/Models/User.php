@@ -2,15 +2,12 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
-
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 use OwenIt\Auditing\Contracts\Auditable;
 use ESolution\DBEncryption\Traits\EncryptedAttribute;
-use Illuminate\Support\Facades\Auth;
 
 class User extends Authenticatable implements Auditable
 {
@@ -66,9 +63,9 @@ class User extends Authenticatable implements Auditable
     {
         return $this->belongsTo(Role::class, 'role_id', "id");
     }
-    public function department()
+    public function destination()
     {
-        return $this->belongsTo(Department::class, 'department_id', "id");
+        return $this->belongsTo(Destination::class, 'destination_id', "id");
     }
     public function job()
     {

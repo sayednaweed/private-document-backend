@@ -6,10 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentDestination extends Model
 {
-    //
+    protected $guarded = [];
 
-
-    
     public function document()
     {
         return $this->belongsTo(Document::class);
@@ -18,6 +16,4 @@ class DocumentDestination extends Model
     {
         return $this->belongsTo(Destination::class);
     }
-
-    
 }

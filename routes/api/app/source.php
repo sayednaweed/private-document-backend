@@ -1,23 +1,13 @@
 <?php
 
-
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\api\app\SourceController;
-
-
-
-
-
-Route::get('/document/source/load',[SourceController::class, 'sources']);
-
-Route::POST('/document/source/store',[SourceController::class, 'store']);
-
-
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(['api.key', "auth:sanctum"])->group(function () {
- 
-
-  // ->middleware(["hasViewPermission:" . PermissionEnum::documents->value]);
-
-
-
+  Route::post('/source/store', [SourceController::class, "store"])->middleware(["hasAddPermission:" . PermissionEnum::settings->value]);
+  Route::get('/sources', [SourceController::class, "sources"])->middleware(["hasViewPermission:" . PermissionEnum::settings->value]);
+  Route::delete('/source/{id}', [SourceController::class, "destroy"])->middleware(["hasDeletePermission:" . PermissionEnum::settings->value]);
+  Route::get('/source/{id}', [SourceController::class, "source"])->middleware(["hasViewPermission:" . PermissionEnum::settings->value]);
+  Route::post('/source/update', [SourceController::class, "update"])->middleware(["hasEditPermission:" . PermissionEnum::settings->value]);
 });

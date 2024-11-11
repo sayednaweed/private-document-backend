@@ -2,18 +2,23 @@
 
 namespace App\Models;
 
+use App\Models\Translate;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class Destination extends Model
 {
-    //
+    use HasFactory;
 
+    protected $guarded = [];
 
-    protected $fillable = ['name','color','destination_type_id'];
-
-
-    public function destinationType()
+    public function type()
     {
-        return $this->belongsTo(DestinationType::class);
+        return $this->belongsTo(DestinationType::class, 'destination_type_id');
+    }
+    // In the Destination model
+    public function translations()
+    {
+        return $this->morphMany(Translate::class, 'translable');
     }
 }

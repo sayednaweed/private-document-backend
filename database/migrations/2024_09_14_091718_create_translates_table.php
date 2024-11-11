@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('language_name');
             $table->foreign('language_name')->references('name')->on('languages')->onUpdate('cascade')
                 ->onDelete('cascade');
-            $table->index(['translable_id', "language_name"]);
+            $table->index(['translable_id', "language_name", 'translable_type']);
             $table->timestamps();
         });
     }

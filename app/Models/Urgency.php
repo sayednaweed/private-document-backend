@@ -6,6 +6,5 @@ use Illuminate\Database\Eloquent\Model;
 
 class Urgency extends Model
 {
-    //
-    protected $fillable = ['id', 'name']; 
+    protected $guarded = [];
 }

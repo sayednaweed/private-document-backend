@@ -2,10 +2,13 @@
 
 namespace Database\Seeders;
 
+// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
 use App\Enums\RoleEnum;
+use App\Models\DestinationType;
 use App\Models\Contact;
 use App\Models\Country;
-use App\Models\Department;
+use App\Models\Destination;
 use App\Models\District;
 use App\Models\Email;
 use App\Models\Language;
@@ -17,7 +20,6 @@ use App\Models\RolePermission;
 use App\Models\Translate;
 use App\Models\User;
 use App\Models\UserPermission;
-// use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
 
@@ -41,18 +43,36 @@ class DatabaseSeeder extends Seeder
             "id" => RoleEnum::admin,
             "name" => "admin"
         ]);
+        Role::factory()->create([
+            "id" => RoleEnum::user,
+            "name" => "user"
+        ]);
         $contact =  Contact::factory()->create([
             "value" => "+93785764809"
         ]);
+        $muqam =  DestinationType::factory()->create([
+            "name" => "Muqam",
+        ]);
+        $directorate =  DestinationType::factory()->create([
+            "name" => "Directorate",
+        ]);
+        $this->Translate("مقام", "fa", $muqam->id, DestinationType::class);
+        $this->Translate("مقام", "ps", $muqam->id, DestinationType::class);
+        $this->Translate("ریاست ", "fa", $directorate->id, DestinationType::class);
+        $this->Translate("ریاست ", "ps", $directorate->id, DestinationType::class);
         $job =  ModelJob::factory()->create([
             "name" => "Administrator",
         ]);
         $this->Translate("مدیر", "fa", $job->id, ModelJob::class);
+        $this->Translate("مدیر", "ps", $job->id, ModelJob::class);
 
-        $department =  Department::factory()->create([
+        $destination = Destination::create([
             "name" => "Information Technology",
+            "color" => "#B4D455",
+            "destination_type_id" => $directorate->id,
         ]);
-        $this->Translate("تکنالوژی معلوماتی", "fa", $department->id, Department::class);
+        $this->Translate("تکنالوژی معلوماتی", "fa", $destination->id, Destination::class);
+        $this->Translate("معلوماتي ټکنالوژي", "ps", $destination->id, Destination::class);
         User::factory()->create([
             'full_name' => 'Sayed Naweed Sayedy',
             'username' => 'super@admin.com',
@@ -63,7 +83,7 @@ class DatabaseSeeder extends Seeder
             'role_id' =>  RoleEnum::super,
             'contact_id' =>  $contact->id,
             'job_id' =>  $job->id,
-            'department_id' =>  $department->id,
+            'destination_id' =>  $destination->id,
         ]);
         // Icons
         $dashboard = 'public/icons/home.svg';
@@ -71,7 +91,7 @@ class DatabaseSeeder extends Seeder
         $chart = 'public/icons/chart.svg';
         $settings = 'public/icons/settings.svg';
         $logs = 'public/icons/logs.svg';
-        $audit = 'public/icons/audit.svg';
+        $audit = 'public/icons/audits.svg';
         $documents = 'public/icons/documents.svg';
         Permission::factory()->create([
             "name" => "dashboard",

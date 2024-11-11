@@ -2,19 +2,19 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Destination;
+use App\Models\User;
 use Exception;
 use Carbon\Carbon;
-use App\Models\User;
-use App\Enums\RoleEnum;
-use App\Models\Contact;
-use App\Models\Translate;
-use App\Models\Department;
 use Illuminate\Http\Request;
-use App\Models\UserPermission;
+use Illuminate\Database\Query\JoinClause;
+use Illuminate\Support\Facades\App;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
+
+use function Laravel\Prompts\select;
 
 class TestController extends Controller
 {
@@ -29,6 +29,71 @@ class TestController extends Controller
         // Session::put('locale', "fa");
         // $sessionLocale = Session::get('locale');
 
+        $locale = App::getLocale();
+
+        // Fetch destinations with their translations and the related destination type translations
+        $query = Destination::whereHas('translations', function ($query) use ($locale) {
+            // Filter the translations for each destination by locale
+            $query->where('language_name', '=', $locale);
+        })
+            ->with([
+                'translations' => function ($query) use ($locale) {
+                    // Eager load only the 'value' column for translations filtered by locale
+                    $query->select('id', 'value', 'created_at', 'translable_id')
+                        // Eager load the translations for Destination filtered by locale
+                        ->where('language_name', '=', $locale);
+                },
+                'type.translations' => function ($query) use ($locale) {
+                    // Eager load only the 'value' column for translations filtered by locale
+                    $query->select('id', 'value', 'created_at', 'translable_id')
+                        // Eager load the translations for DestinationType filtered by locale
+                        ->where('language_name', '=', $locale);
+                }
+            ])
+            ->select('id', 'color', 'destination_type_id', 'created_at')
+            ->get();
+
+        // Process results and include the translations of DestinationType within each Destination
+        // Transform the collection
+        $query->each(function ($destination) {
+            // Get the translated values for the destination
+            $destinationTranslation = $destination->translations->first();
+
+            // Set the transformed values for the destination
+            $destination->id = $destination->id;
+            $destination->name = $destinationTranslation->value;  // Translated name
+            $destination->color = $destination->color;  // Translated color
+            $destination->createdAt = $destination->created_at;
+
+            // Get the translated values for the related DestinationType
+            $destinationTypeTranslation = $destination->type->translations->first();
+
+            // Add the related DestinationType translation
+            $type = [
+                "id" => $destination->destination_type_id,
+                "name" => $destinationTypeTranslation->value,  // Translated name of the type
+                "createdAt" => $destinationTypeTranslation->created_at
+            ];
+            unset($destination->type);  // Remove destinationType relation
+            $destination->type = $type;
+
+            // Remove unnecessary data from the destination object
+            unset($destination->translations);  // Remove translations relation
+            unset($destination->created_at);  // Remove translations relation
+            unset($destination->destination_type_id);  // Remove translations relation
+        });
+
+        return $query;
+
+        // ->join('destinations', function ($join) use ($locale) {
+        //     // Join based on translable_id and translable_type
+        //     $join->on('translates.translable_id', '=', 'destinations.id')
+        //         ->on('translates.translable_type', '=', DB::raw("'App\Models\Destination'"))
+        //         ->where('translates.language_name', '=', $locale);  // Filter by language name
+        // });
+        // ->get();
+        return $query->get();
+        dd($query->toSql(), $query->getBindings());
         // return $sessionLocale;
         $userCount = User::count();
         $todayCount = User::whereDate('created_at', Carbon::today())->count();

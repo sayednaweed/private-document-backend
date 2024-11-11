@@ -22,8 +22,8 @@ return new class extends Migration
             $table->date('document_date');
             $table->date('qaid_warida_date');
             $table->date('qaid_sadira_date')->nullable();
-            $table->unsignedBigInteger('type_id');
-            $table->foreign('type_id')->references('id')->on('types')
+            $table->unsignedBigInteger('document_type_id');
+            $table->foreign('document_type_id')->references('id')->on('document_types')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->unsignedBigInteger('status_id');
@@ -46,6 +46,7 @@ return new class extends Migration
             $table->foreign('reciever_user_id')->references('id')->on('users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
+            $table->index(['document_type_id', 'scan_id', 'status_id']);
             $table->timestamps();
         });
     }

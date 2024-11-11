@@ -14,4 +14,5 @@ return [
     'failed' => "Operation failed.",
     'apiloginpage' => 'API key Generating Login Page',
     'not_found' => 'Record Not Found.',
+    'destination_type_not_found' => 'Destination type Not Found.',
 ];

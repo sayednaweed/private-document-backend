@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Enums\RoleEnum;
 use App\Models\Contact;
 use App\Models\Translate;
 use App\Models\User;
@@ -63,38 +62,53 @@ abstract class Controller
                 // 3. Update new contact
                 $user->contact_id = $newContact->id;
             } else {
-                if ($contact->id === $user->contact_id) {
-                    // 2. Remove old contact
-                    $contact->delete();
-                    // 1. Add new contact
-                    $newContact = Contact::create([
-                        "value" => $request->contact
-                    ]);
-                    // 3. Update new contact
-                    $user->contact_id = $newContact->id;
-                } else {
-                    return response()->json([
-                        'message' => __('app_translation.contact_exist'),
-                    ], 400, [], JSON_UNESCAPED_UNICODE);
+                if ($contact->id !== $user->contact_id) {
+                    return false;
                 }
             }
         }
+
+        return true;
     }
-    public function getTableTranslations($className, $locale, $order)
+    public function getTableTranslations($className, $locale, $order, $columns = [
+        'value as name',
+        'translable_id as id',
+        'created_at as createdAt'
+    ])
     {
         return Translate::where('translable_type', '=', $className)
             ->where('language_name', '=', $locale)
-            ->select('value as name', 'translable_id as id', 'created_at as createdAt')
+            ->select($columns)
             ->orderBy('id', $order)
+            ->get();
+    }
+    public function getTableTranslationsWithJoin($className, $locale, $order, $columns = [
+        'value as name',
+        'translable_id as id',
+        'created_at as createdAt'
+    ])
+    {
+        // Dynamically get the related model's table (e.g., 'destinations' for Destination model)
+        $relatedTable = (new $className)->getTable();
+
+        // Perform the query to join the Translate table with the related model table
+        return Translate::where('translable_type', '=', $className)
+            ->where('language_name', '=', $locale)
+            ->join($relatedTable, function ($join) use ($relatedTable) {
+                // Join Translate table with the related model (e.g., 'destinations') based on translable_id
+                $join->on('translates.translable_id', '=', "{$relatedTable}.id");
+            })
+            ->select($columns)
+            ->orderBy('translates.id', $order)
             ->get();
     }
     public function getTranslationWithNameColumn($model, $className)
     {
-        $department = null;
+        $item = null;
         $locale = App::getLocale();
         if ($model->name) {
             if ($locale === "en")
-                $department =  $model->name;
+                $item =  $model->name;
             else {
                 $data = Translate::where('translable_id', '=', $model->id)
                     ->where('translable_type', '=', $className)
@@ -102,14 +116,14 @@ abstract class Controller
                     ->select('value')
                     ->first();
                 if ($data)
-                    $department = $data->value;
+                    $item = $data->value;
             }
         }
-        return $department;
+        return $item;
     }
     public function TranslateFarsi($value, $translable_id, $translable_type): void
     {
-        Translate::factory()->create([
+        Translate::create([
             "value" => $value,
             "language_name" => "fa",
             "translable_type" => $translable_type,
@@ -118,7 +132,7 @@ abstract class Controller
     }
     public function TranslatePashto($value, $translable_id, $translable_type): void
     {
-        Translate::factory()->create([
+        Translate::create([
             "value" => $value,
             "language_name" => "ps",
             "translable_type" => $translable_type,

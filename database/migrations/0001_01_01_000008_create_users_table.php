@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\RoleEnum;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
@@ -37,11 +36,11 @@ return new class extends Migration
             $table->foreign('job_id')->references('id')->on('model_jobs')
                 ->onUpdate('cascade')
                 ->onDelete('set null');
-            $table->unsignedBigInteger('department_id')->nullable();
-            $table->foreign('department_id')->references('id')->on('departments')
+            $table->unsignedBigInteger('destination_id')->nullable();
+            $table->foreign('destination_id')->references('id')->on('destinations')
                 ->onUpdate('cascade')
                 ->onDelete('set null');
-            $table->index(["email_id", "job_id", "department_id", "role_id"]);
+            $table->index(["email_id", "job_id", "destination_id", "role_id"]);
             $table->timestamp('email_verified_at')->nullable();
             $table->rememberToken();
             $table->timestamps();

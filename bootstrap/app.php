@@ -1,18 +1,14 @@
 <?php
 
-use App\Http\Middleware\api\AllowAdminOrSuperMiddleware;
-use App\Http\Middleware\api\AllowedUsersToEditMiddleware;
-use App\Http\Middleware\api\EnsureUserIsAdminOrSuper;
-use App\Http\Middleware\api\HasAddPermissionMiddleware;
-use App\Http\Middleware\api\HasDeletePermissionMiddleware;
-use App\Http\Middleware\api\HasEditPermissionMiddleware;
-use App\Http\Middleware\api\HasGrantPermissionMiddleware;
-use App\Http\Middleware\api\HasViewPermissionMiddleware;
-use App\Http\Middleware\api\LocaleMiddleware;
-use App\Http\Middleware\api\user\AccessUserCheckMiddleware;
-use App\Http\Middleware\api\user\ModifyUserCheckMiddleware;
-use App\Http\Middleware\api\user\SuperToModifyUserMiddleware;
-use App\Http\Middleware\api\ValidateApiKey;
+use App\Http\Middleware\api\template\AccessUserCheckMiddleware;
+use App\Http\Middleware\api\template\AllowAdminOrSuperMiddleware;
+use App\Http\Middleware\api\template\HasAddPermissionMiddleware;
+use App\Http\Middleware\api\template\HasDeletePermissionMiddleware;
+use App\Http\Middleware\api\template\HasEditPermissionMiddleware;
+use App\Http\Middleware\api\template\HasGrantPermissionMiddleware;
+use App\Http\Middleware\api\template\HasViewPermissionMiddleware;
+use App\Http\Middleware\api\template\LocaleMiddleware;
+use App\Http\Middleware\api\template\ValidateApiKey;
 use App\Http\Middleware\web\EnsureUserIsMaster;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;

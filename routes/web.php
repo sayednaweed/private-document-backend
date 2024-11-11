@@ -1,9 +1,9 @@
 <?php
 
 use App\Enums\RoleEnum;
+use App\Http\Controllers\api\template\ApplicationController;
 use App\Http\Controllers\TestController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\api\ApplicationController;
 use App\Http\Controllers\lib\report\ReportController;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;

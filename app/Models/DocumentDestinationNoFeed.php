@@ -6,8 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class DocumentDestinationNoFeed extends Model
 {
-    //
-
+    protected $guarded = [];
 
     public function document()
     {

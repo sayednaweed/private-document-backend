@@ -1,23 +1,13 @@
 <?php
 
+use App\Enums\PermissionEnum;
 use App\Http\Controllers\api\app\DocumentTypeController;
-
-
-
-
-
-Route::get('/document/type/load', [DocumentTypeController::class, "documentTypes"]);
-
-Route::POST('/document/type/store', [DocumentTypeController::class, "store"]);
-
-
-
+use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->middleware(['api.key', "auth:sanctum"])->group(function () {
- 
-
-  // ->middleware(["hasViewPermission:" . PermissionEnum::documents->value]);
-
-
-
+  Route::post('/document-type/store', [DocumentTypeController::class, "store"])->middleware(["hasAddPermission:" . PermissionEnum::settings->value]);
+  Route::get('/document-types', [DocumentTypeController::class, "documentTypes"])->middleware(["hasViewPermission:" . PermissionEnum::settings->value]);
+  Route::delete('/document-type/{id}', [DocumentTypeController::class, "destroy"])->middleware(["hasDeletePermission:" . PermissionEnum::settings->value]);
+  Route::get('/document-type/{id}', [DocumentTypeController::class, "documentType"])->middleware(["hasViewPermission:" . PermissionEnum::settings->value]);
+  Route::post('/document-type/update', [DocumentTypeController::class, "update"])->middleware(["hasEditPermission:" . PermissionEnum::settings->value]);
 });

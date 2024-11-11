@@ -18,11 +18,12 @@ return new class extends Migration
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-                $table->unsignedBigInteger('destination_id');
+            $table->unsignedBigInteger('destination_id');
             $table->foreign('destination_id')->references('id')->on('destinations')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-
+            $table->index(['destination_id', 'document_id']);
+            $table->timestamps();
         });
     }
 
