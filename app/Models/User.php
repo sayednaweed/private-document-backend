@@ -73,9 +73,14 @@ class User extends Authenticatable implements Auditable
     {
         return $this->belongsTo(ModelJob::class, 'job_id', "id");
     }
+    // public function permissions()
+    // {
+    //     return $this->hasMany(UserPermission::class, 'user_id', 'id');
+    // }
+    // Define the relationship to the Permission model
     public function permissions()
     {
-        return $this->hasMany(UserPermission::class, 'user_id', 'id');
+        return $this->hasManyThrough(Permission::class, UserPermission::class, 'user_id', 'name', 'id', 'permission');
     }
 
     public function hasPermission($permission)

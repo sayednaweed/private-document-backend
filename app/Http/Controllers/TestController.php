@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\RoleEnum;
 use App\Models\Destination;
+use App\Models\RolePermission;
 use App\Models\User;
+use App\Models\UsersEnView;
+use App\Models\UsersView;
 use Exception;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -13,21 +17,77 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
-
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\File;
 use function Laravel\Prompts\select;
 
 class TestController extends Controller
 {
     public function index(Request $request)
     {
-        // $path = storage_path('app/' . "images/a7453951-0348-48b7-a7ab-e75916e20a63.jpg");
+        // return User::with([
+        //     'contact:id,value',
+        //     'email:id,value',
+        //     'job:id,name',
+        //     'destination:id,name'  // Eager load destination relationship
+        // ])
+        //     ->select("id", "username", "profile", "status", "job_id", "destination_id", 'email_id', 'contact_id', "created_at as createdAt")
+        //     ->get();
 
-        // if (!Storage::disk('local')->exists("images/a7453951-0348-48b7-a7ab-e75916e20a63.jpg")) {
-        //     return response()->json("Not found");
-        // }
 
-        // Session::put('locale', "fa");
-        // $sessionLocale = Session::get('locale');
+        return UsersEnView::all();
+
+        // Path to the user_error.log file
+        $logFilePath = storage_path('logs/user_error.log');
+
+        // Check if the file exists
+        if (!File::exists($logFilePath)) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Log file not found.'
+            ], 404);
+        }
+
+        // Get the contents of the user_error.log file
+        $logContents = File::get($logFilePath);
+
+        // Split the log contents into individual lines (assuming each log entry is on a separate line)
+        $logLines = explode("\n", $logContents);
+
+        $logs = [];
+
+        // Iterate through each log line and parse it as JSON
+        foreach ($logLines as $line) {
+            // Skip empty lines
+            if (empty($line)) continue;
+
+            // Decode the JSON log entry
+            $logData = json_decode($line, true);
+
+            // Check if decoding was successful
+            if ($logData) {
+                $context = $logData['context'] ?? null;
+
+                if ($context) {
+                    // Add additional information to each log entry
+                    $logs[] = [
+                        'timestamp' => $context['timestamp'] ?? now()->toDateTimeString(),
+                        'error_message' => $context['error_message'] ?? 'No message',
+                        'user_id' => $context['user_id'] ?? 'N/A',
+                        'username' => $context['username'] ?? 'N/A',
+                        'ip_address' => $context['ip_address'] ?? 'N/A',
+                        'method' => $context['method'] ?? 'N/A',
+                        'uri' => $context['uri'] ?? 'N/A',
+                    ];
+                }
+            }
+        }
+
+        // Return the formatted logs as JSON
+        return response()->json([
+            'status' => 'success',
+            'logs' => $logs
+        ]);
 
         $locale = App::getLocale();
 

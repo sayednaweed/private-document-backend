@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('document_destination_no_feeds', function (Blueprint $table) {
             $table->id();
-            $table->date('send_date');
+            $table->timestamp('send_date')->useCurrent();
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')

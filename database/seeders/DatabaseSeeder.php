@@ -17,6 +17,7 @@ use App\Models\Permission;
 use App\Models\Province;
 use App\Models\Role;
 use App\Models\RolePermission;
+use App\Models\Status;
 use App\Models\Translate;
 use App\Models\User;
 use App\Models\UserPermission;
@@ -32,6 +33,7 @@ class DatabaseSeeder extends Seeder
     {
         // User::factory(10)->create();
         $this->languages();
+        $this->statuses();
         $email =  Email::factory()->create([
             "value" => "super@admin.com"
         ]);
@@ -182,6 +184,29 @@ class DatabaseSeeder extends Seeder
         $this->rolePermission();
 
         $this->countries();
+    }
+    public function statuses()
+    {
+        $inProgres = Status::factory()->create([
+            "name" => "In Progress",
+            "color" => "#C0C0C0",
+        ]);
+        $keep = Status::factory()->create([
+            "name" => "Keep",
+            "color" => "#008B8B",
+        ]);
+        $complete = Status::factory()->create([
+            "name" => "Complete",
+            "color" => "#008B8B",
+        ]);
+        $this->Translate("در حال اجرا", "fa", $inProgres->id, Status::class);
+        $this->Translate("در حال اجرا", "ps", $inProgres->id, Status::class);
+
+        $this->Translate("حفظ", "fa", $keep->id, Status::class);
+        $this->Translate("ساتل", "ps", $keep->id, Status::class);
+
+        $this->Translate("تکمیل", "fa", $complete->id, Status::class);
+        $this->Translate("تکمیل", "ps", $complete->id, Status::class);
     }
     // Add list of languages here
     public function languages(): void
@@ -1683,6 +1708,31 @@ class DatabaseSeeder extends Seeder
             "delete" => true,
             "add" => true,
             "role" => RoleEnum::admin,
+            "permission" => "documents"
+        ]);
+        // User permission
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::user,
+            "permission" => "dashboard"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::user,
+            "permission" => "reports"
+        ]);
+        RolePermission::factory()->create([
+            "view" => true,
+            "edit" => true,
+            "delete" => true,
+            "add" => true,
+            "role" => RoleEnum::user,
             "permission" => "documents"
         ]);
     }

@@ -22,8 +22,12 @@ class ProfileController extends Controller
         try {
             $authUser = $request->user();
             // 1. Validate contact
-            // 3. Check contact
-            $this->addOrRemoveContact($authUser, $request);
+            //    Check contact
+            if (!$this->addOrRemoveContact($authUser, $request)) {
+                return response()->json([
+                    'message' => __('app_translation.contact_exist'),
+                ], 400, [], JSON_UNESCAPED_UNICODE);
+            }
             // 2. Validate email 
             $email = Email::where("value", '=', $request->email)->first();
             if (!$email) {

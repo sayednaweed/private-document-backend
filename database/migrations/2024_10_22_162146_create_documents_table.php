@@ -19,9 +19,10 @@ return new class extends Migration
             $table->string('qaid_warida_number');
             $table->string('qaid_sadira_number')->nullable();
             $table->string('saved_file')->nullable()->comment('info document save in which files');
-            $table->date('document_date');
-            $table->date('qaid_warida_date');
-            $table->date('qaid_sadira_date')->nullable();
+            $table->string('document_date');
+            $table->string('qaid_warida_date');
+            $table->string('qaid_sadira_date')->nullable();
+            $table->boolean('send_to_muqam');
             $table->unsignedBigInteger('document_type_id');
             $table->foreign('document_type_id')->references('id')->on('document_types')
                 ->onUpdate('cascade')

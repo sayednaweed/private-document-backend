@@ -14,8 +14,8 @@ return new class extends Migration
         Schema::create('scans', function (Blueprint $table) {
             $table->id();
             $table->string('initail_scan');
-            $table->string('muqam_scan');
-            $table->string('final_scan');
+            $table->string('muqam_scan')->nullable();
+            $table->string('final_scan')->nullable();
             $table->timestamps();
         });
     }

@@ -51,7 +51,12 @@ return [
     */
 
     'channels' => [
-
+        // 'user_error' => [
+        //     'driver' => 'single', // Use the 'single' driver to write logs to a single file
+        //     'path' => storage_path('logs/user_error.log'), // Define the custom log file location
+        //     'level' => 'info', // Log level can be 'info', 'error', etc.
+        //     'formatter' => \Monolog\Formatter\JsonFormatter::class, // Optional: Use JSON format for structured logs
+        // ],
         'stack' => [
             'driver' => 'stack',
             'channels' => explode(',', env('LOG_STACK', 'single')),
@@ -89,7 +94,7 @@ return [
             'handler_with' => [
                 'host' => env('PAPERTRAIL_URL'),
                 'port' => env('PAPERTRAIL_PORT'),
-                'connectionString' => 'tls://'.env('PAPERTRAIL_URL').':'.env('PAPERTRAIL_PORT'),
+                'connectionString' => 'tls://' . env('PAPERTRAIL_URL') . ':' . env('PAPERTRAIL_PORT'),
             ],
             'processors' => [PsrLogMessageProcessor::class],
         ],

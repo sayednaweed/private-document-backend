@@ -10,9 +10,13 @@ use App\Http\Middleware\api\template\HasViewPermissionMiddleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
 use App\Http\Middleware\api\template\ValidateApiKey;
 use App\Http\Middleware\web\EnsureUserIsMaster;
+use App\Jobs\LogErrorJob;
+use App\Models\ErrorLog;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -36,5 +40,30 @@ return Application::configure(basePath: dirname(__DIR__))
             ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Handle all other exceptions globally
+
+
+        $exceptions->renderable(function (Throwable $err) {
+            if ($err instanceof \Illuminate\Validation\ValidationException) {
+                // Skip processing for validation exceptions
+                return null; // Let Laravel handle it as usual (validation errors are automatically handled)
+            }
+            $logData = [
+                'error_code' => $err->getCode(),
+                'trace' => $err->getTraceAsString(),
+                'exception_type' => get_class($err),
+                'error_message' => $err->getMessage(),
+                'user_id' => request()->user() ? request()->user()->id : "N/K", // If you have an authenticated user, you can add the user ID
+                'username' => request()->user() ? request()->user()->username : "N/K", // If you have an authenticated user, you can add the user ID
+                'ip_address' => request()->ip(),
+                'method' => request()->method(),
+                'uri' => request()->fullUrl(),
+            ];
+            // Dispatch the logging job asynchronously
+            LogErrorJob::dispatch($logData);
+            Log::info('Global Exception =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        });
     })->create();

@@ -9,4 +9,9 @@ class ModelJob extends Model
 {
     use HasFactory;
     protected $guarded = [];
+
+    public function translations()
+    {
+        return $this->morphMany(Translate::class, 'translable');
+    }
 }

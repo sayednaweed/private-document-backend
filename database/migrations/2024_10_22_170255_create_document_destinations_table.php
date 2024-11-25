@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('document_destinations', function (Blueprint $table) {
             $table->id();
             $table->integer('step');
+            $table->string('recieve_date')->nullable();
+            $table->timestamp('send_date')->useCurrent();
             $table->integer('deadline');
-            $table->date('send_date');
-            $table->date('recieve_date');
-            $table->boolean('response');
+            $table->text('response')->nullable();
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')

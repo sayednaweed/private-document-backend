@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\api\template;
 
+use App\Enums\DestinationTypeEnum;
 use App\Enums\LanguageEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\app\destination\DestinationStoreRequest;
@@ -23,7 +24,51 @@ class DestinationController extends Controller
                 $tr = Destination::with(['type']) // Eager load relationships
                     ->select("name", 'id', 'created_at as createdAt', 'color', 'destination_type_id')->orderBy('id', 'desc')->get();
             else {
-                $tr = $this->translations($locale);
+                $tr = $this->translations($locale, null);
+            }
+            return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $err) {
+            Log::info('statuses error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function directorates()
+    {
+        try {
+            $locale = App::getLocale();
+            $tr = [];
+            if ($locale === LanguageEnum::default->value)
+                $tr = Destination::with(['type']) // Eager load relationships
+                    ->select("name", 'id', 'created_at as createdAt', 'color', 'destination_type_id')
+                    ->where('destination_type_id', '=', DestinationTypeEnum::directorate->value)
+                    ->orderBy('id', 'desc')
+                    ->get();
+            else {
+                $tr = $this->translations($locale, DestinationTypeEnum::directorate->value);
+            }
+            return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
+        } catch (Exception $err) {
+            Log::info('statuses error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
+            ], 500, [], JSON_UNESCAPED_UNICODE);
+        }
+    }
+    public function muqams()
+    {
+        try {
+            $locale = App::getLocale();
+            $tr = [];
+            if ($locale === LanguageEnum::default->value)
+                $tr = Destination::with(['type']) // Eager load relationships
+                    ->select("name", 'id', 'created_at as createdAt', 'color', 'destination_type_id')
+                    ->where('destination_type_id', '=', DestinationTypeEnum::muqam->value)
+                    ->orderBy('id', 'desc')
+                    ->get();
+            else {
+                $tr = $this->translations($locale, DestinationTypeEnum::muqam->value);
             }
             return response()->json($tr, 200, [], JSON_UNESCAPED_UNICODE);
         } catch (Exception $err) {
@@ -246,59 +291,55 @@ class DestinationController extends Controller
     }
 
     // Utils
-    private function translations($locale)
+    private function translations($locale, $destination_type_id)
     {
-        // Fetch destinations with their translations and the related destination type translations
-        $query = Destination::whereHas('translations', function ($query) use ($locale) {
-            // Filter the translations for each destination by locale
-            $query->where('language_name', '=', $locale);
-        })
-            ->with([
-                'translations' => function ($query) use ($locale) {
-                    // Eager load only the 'value' column for translations filtered by locale
-                    $query->select('id', 'value', 'created_at', 'translable_id')
-                        // Eager load the translations for Destination filtered by locale
-                        ->where('language_name', '=', $locale);
-                },
-                'type.translations' => function ($query) use ($locale) {
-                    // Eager load only the 'value' column for translations filtered by locale
-                    $query->select('id', 'value', 'created_at', 'translable_id')
-                        // Eager load the translations for DestinationType filtered by locale
-                        ->where('language_name', '=', $locale);
-                }
-            ])
-            ->select('id', 'color', 'destination_type_id', 'created_at')
-            ->get();
+        // Fetch destinations with translations and related destination type translations
+        $query = Destination::with([
+            'translations' => function ($query) use ($locale) {
+                // Filter translations by locale and select required fields
+                $query->select('id', 'value', 'created_at', 'translable_id')
+                    ->where('language_name', '=', $locale);
+            },
+            'type.translations' => function ($query) use ($locale) {
+                // Filter translations for the related type by locale
+                $query->select('id', 'value', 'created_at', 'translable_id')
+                    ->where('language_name', '=', $locale);
+            }
+        ])->select('id', 'color', 'destination_type_id', 'created_at');
 
-        // Process results and include the translations of DestinationType within each Destination
+        // Apply filter for destination type if passed
+        if ($destination_type_id) {
+            $query->where('destination_type_id', '=', $destination_type_id);
+        }
+
+        $destinations = $query->get();
+
         // Transform the collection
-        $query->each(function ($destination) {
-            // Get the translated values for the destination
+        $destinations = $destinations->map(function ($destination) {
+            // Get the translated name of the destination
             $destinationTranslation = $destination->translations->first();
 
-            // Set the transformed values for the destination
-            $destination->id = $destination->id;
-            $destination->name = $destinationTranslation->value;  // Translated name
-            $destination->color = $destination->color;  // Translated color
-            $destination->createdAt = $destination->created_at;
-
-            // Get the translated values for the related DestinationType
-            $destinationTypeTranslation = $destination->type->translations->first();
-
-            // Add the related DestinationType translation
-            $type = [
-                "id" => $destination->destination_type_id,
-                "name" => $destinationTypeTranslation->value,  // Translated name of the type
-                "createdAt" => $destinationTypeTranslation->created_at
+            // Prepare the destination data
+            $destinationData = [
+                'id' => $destination->id,
+                'name' => $destinationTranslation ? $destinationTranslation->value : null,  // Translated name
+                'color' => $destination->color,
+                'createdAt' => $destination->created_at,
             ];
-            unset($destination->type);  // Remove destinationType relation
-            $destination->type = $type;
 
-            // Remove unnecessary data from the destination object
-            unset($destination->translations);  // Remove translations relation
-            unset($destination->created_at);  // Remove translations relation
-            unset($destination->destination_type_id);  // Remove translations relation
+            // Get the translated name for the destination type
+            $destinationTypeTranslation = $destination->type->translations->first();
+            $destinationData['type'] = [
+                'id' => $destination->destination_type_id,
+                'name' => $destinationTypeTranslation ? $destinationTypeTranslation->value : null,  // Translated name
+                'createdAt' => $destinationTypeTranslation ? $destinationTypeTranslation->created_at : null
+            ];
+
+            // Return transformed destination data
+            return $destinationData;
         });
-        return $query;
+
+        // Return the transformed collection
+        return $destinations;
     }
 }

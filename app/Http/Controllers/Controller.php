@@ -9,6 +9,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Exception;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\Log;
 
 abstract class Controller
 {
@@ -33,6 +34,34 @@ abstract class Controller
                 }
             }
         } catch (Exception $err) {
+        }
+        return null;
+    }
+    public function storeDocument(Request $request, $folder)
+    {
+        try {
+            // 1. If storage not exist create it.
+            $path = storage_path() . "/app/private/documents/{$folder}/";
+            // Checks directory exist if not will be created.
+            !is_dir($path) &&
+                mkdir($path, 0777, true);
+
+            // 2. Store image in filesystem
+            $fileName = null;
+            if ($request->hasFile('document')) {
+                $file = $request->file('document');
+                if ($file != null) {
+                    $fileName = Str::uuid() . '.' . $file->extension();
+                    $file->move($path, $fileName);
+
+                    return "private/documents/{$folder}/" . $fileName;
+                }
+            }
+        } catch (Exception $err) {
+            Log::info('storeDocument error =>' . $err->getMessage());
+            return response()->json([
+                'message' => __('app_translation.server_error')
+            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
         return null;
     }

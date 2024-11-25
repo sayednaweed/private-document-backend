@@ -28,7 +28,7 @@ class Document extends Model  implements Auditable
     }
     public function type()
     {
-        return $this->belongsTo(DocumentType::class);
+        return $this->belongsTo(DocumentType::class, 'document_type_id', "id");
     }
     public function urgency()
     {
