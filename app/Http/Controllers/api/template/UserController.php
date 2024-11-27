@@ -14,6 +14,8 @@ use App\Models\ModelJob;
 use App\Models\User;
 use App\Models\UserPermission;
 use App\Models\UsersEnView;
+use App\Models\UsersFaView;
+use App\Models\UsersPsView;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -27,73 +29,60 @@ class UserController extends Controller
     {
         $locale = App::getLocale();
         $tr = [];
+        $perPage = $request->input('per_page', 10); // Number of records per page
+        $page = $request->input('page', 1); // Current page
+
+        // Start building the query
+        $query = [];
         if ($locale === LanguageEnum::default->value) {
-            $perPage = $request->input('per_page', 10); // Number of records per page
-            $page = $request->input('page', 1); // Current page
-
-            // Start building the query
             $query = UsersEnView::query();
-            // Apply date filtering conditionally if provided
-            $startDate = $request->input('filters.date.startDate');
-            $endDate = $request->input('filters.date.endDate');
-
-            if ($startDate || $endDate) {
-                // Apply date range filtering
-                if ($startDate && $endDate) {
-                    $query->whereBetween('createdAt', [$startDate, $endDate]);
-                } elseif ($startDate) {
-                    $query->where('createdAt', '>=', $startDate);
-                } elseif ($endDate) {
-                    $query->where('createdAt', '<=', $endDate);
-                }
-            }
-
-            // // Apply search filter if present
-            // $searchColumn = $request->input('filters.search.column');
-            // $searchValue = $request->input('filters.search.value');
-
-            // if ($searchColumn && $searchValue) {
-            //     $allowedColumns = ['username', 'contact', 'email'];
-
-            //     // Ensure that the search column is allowed
-            //     if (in_array($searchColumn, $allowedColumns)) {
-            //         if ($searchColumn === 'email') {
-            //             $query->whereHas('email', function ($q) use ($searchValue) {
-            //                 $q->where('value', 'like', '%' . $searchValue . '%');
-            //             });
-            //         } elseif ($searchColumn === "contact") {
-            //             $query->whereHas('contact', function ($q) use ($searchValue) {
-            //                 $q->where('value', 'like', '%' . $searchValue . '%');
-            //             });
-            //         } else {
-            //             $query->where($searchColumn, 'like', '%' . $searchValue . '%');
-            //         }
-            //     }
-            // }
-
-            // // Apply sorting if present
-            // $sort = $request->input('filters.sort'); // Sorting column
-            // $order = $request->input('filters.order', 'asc'); // Sorting order (default is 'asc')
-
-            // // Apply sorting by provided column or default to 'created_at'
-            // if ($sort && in_array($sort, ['username', 'createdAt', 'status', 'job', 'destination'])) {
-            //     if ($sort === 'destination') {
-            //         // Sort by the related 'destination.name' if sorting by destination
-            //         $query->orderBy('destinations.name', $order);
-            //     } else {
-            //         // Apply sorting for other fields
-            //         $query->orderBy($sort, $order);
-            //     }
-            // } else {
-            //     // Default sorting if no sort is provided
-            //     $query->orderBy("created_at", $order);
-            // }
-
-            // Apply pagination (ensure you're paginating after sorting and filtering)
-            $tr = $query->paginate($perPage, ['*'], 'page', $page);
+        } else if ($locale === LanguageEnum::farsi->value) {
+            $query = UsersFaView::query();
         } else {
-            $tr = $this->translations($locale, null);
+            $query = UsersPsView::query();
         }
+        // Apply date filtering conditionally if provided
+        $startDate = $request->input('filters.date.startDate');
+        $endDate = $request->input('filters.date.endDate');
+
+        if ($startDate || $endDate) {
+            // Apply date range filtering
+            if ($startDate && $endDate) {
+                $query->whereBetween('createdAt', [$startDate, $endDate]);
+            } elseif ($startDate) {
+                $query->where('createdAt', '>=', $startDate);
+            } elseif ($endDate) {
+                $query->where('createdAt', '<=', $endDate);
+            }
+        }
+
+        // Apply search filter if present
+        $searchColumn = $request->input('filters.search.column');
+        $searchValue = $request->input('filters.search.value');
+
+        if ($searchColumn && $searchValue) {
+            $allowedColumns = ['username', 'contact', 'email'];
+
+            // Ensure that the search column is allowed
+            if (in_array($searchColumn, $allowedColumns)) {
+                $query->where($searchColumn, 'like', '%' . $searchValue . '%');
+            }
+        }
+
+        // Apply sorting if present
+        $sort = $request->input('filters.sort'); // Sorting column
+        $order = $request->input('filters.order', 'asc'); // Sorting order (default is 'asc')
+
+        // Apply sorting by provided column or default to 'created_at'
+        if ($sort && in_array($sort, ['username', 'createdAt', 'status', 'job', 'destination'])) {
+            $query->orderBy($sort, $order);
+        } else {
+            // Default sorting if no sort is provided
+            $query->orderBy("createdAt", $order);
+        }
+
+        // Apply pagination (ensure you're paginating after sorting and filtering)
+        $tr = $query->paginate($perPage, ['*'], 'page', $page);
         return response()->json(
             [
                 "users" => $tr,
@@ -366,7 +355,7 @@ class UserController extends Controller
     }
     public function changePassword(UpdateUserPasswordRequest $request)
     {
-        $payload = $request->validated();
+        $request->validated();
         try {
             $user = $request->get('validatedUser');
             if ($user) {
@@ -388,47 +377,33 @@ class UserController extends Controller
     }
     public function deleteProfile($id)
     {
-        try {
-            $user = User::find($id);
-            if ($user) {
-                $deletePath = storage_path('app/' . "{$user->profile}");
-                if (file_exists($deletePath) && $user->profile != null) {
-                    unlink($deletePath);
-                }
-                // 2. Update the profile
-                $user->profile = null;
-                $user->save();
-                return response()->json([
-                    'message' => __('app_translation.profile_changed')
-                ], 200, [], JSON_UNESCAPED_UNICODE);
-            } else
-                return response()->json([
-                    'message' => __('app_translation.not_found'),
-                ], 404, [], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $err) {
-            Log::info('Profile update error =>' . $err->getMessage());
+        $user = User::find($id);
+        if ($user) {
+            $deletePath = storage_path('app/' . "{$user->profile}");
+            if (file_exists($deletePath) && $user->profile != null) {
+                unlink($deletePath);
+            }
+            // 2. Update the profile
+            $user->profile = null;
+            $user->save();
             return response()->json([
-                'message' => __('app_translation.server_error'),
-            ], 500, [], JSON_UNESCAPED_UNICODE);
-        }
+                'message' => __('app_translation.profile_changed')
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        } else
+            return response()->json([
+                'message' => __('app_translation.not_found'),
+            ], 404, [], JSON_UNESCAPED_UNICODE);
     }
     public function userCount()
     {
-        try {
-            return response()->json([
-                'counts' => [
-                    "userCount" => User::count(),
-                    "todayCount" => User::whereDate('created_at', Carbon::today())->count(),
-                    "activeUserCount" => User::where('status', true)->count(),
-                    "inActiveUserCount" =>  User::where('status', false)->count()
-                ],
-            ], 200, [], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $err) {
-            Log::info('recordCount error =>' . $err->getMessage());
-            return response()->json([
-                'message' => __('app_translation.server_error')
-            ], 500, [], JSON_UNESCAPED_UNICODE);
-        }
+        return response()->json([
+            'counts' => [
+                "userCount" => User::count(),
+                "todayCount" => User::whereDate('created_at', Carbon::today())->count(),
+                "activeUserCount" => User::where('status', true)->count(),
+                "inActiveUserCount" =>  User::where('status', false)->count()
+            ],
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
     public function updatePermission(Request $request)
     {
@@ -436,119 +411,41 @@ class UserController extends Controller
             "user_id" => "required"
         ]);
 
-        try {
-            if ($request->Permission != "undefined") {
-                $user = User::find($request->user_id);
-                // 1. Check if it is super user ID 1 do not allow to change permissions
-                if ($user === null || $user->id == "1")
-                    return response()->json(['message' => "You are not authorized!"], 403);
+        if ($request->Permission != "undefined") {
+            $user = User::find($request->user_id);
+            // 1. Check if it is super user ID 1 do not allow to change permissions
+            if ($user === null || $user->id == "1")
+                return response()->json(['message' => "You are not authorized!"], 403);
 
-                // 2. Delete all permissions
-                UserPermission::where("user_id", "=", $request->user_id)->delete();
-                // 3. Add permissions again
-                $data = json_decode($request->permission, true);
-                foreach ($data as $category  => $permissions) {
-                    $userPermissions = new UserPermission;
-                    $userPermissions->permission = $category;
-                    $userPermissions->user_id = $request->user_id;
-                    // If no access is givin to secction no need to add record
-                    $addModel = false;
-                    foreach ($permissions as $action => $allowed) {
-                        // Check if the value is true or false
-                        if ($allowed == "true")
-                            $addModel = true;
-                        if ($action == "add")
-                            $userPermissions->Add = $allowed;
-                        else if ($action == "edit")
-                            $userPermissions->edit = $allowed;
-                        else if ($action == "delete")
-                            $userPermissions->delete = $allowed;
-                        else if ($action == "view")
-                            $userPermissions->view = $allowed;
-                    }
-                    if ($addModel)
-                        $userPermissions->save();
+            // 2. Delete all permissions
+            UserPermission::where("user_id", "=", $request->user_id)->delete();
+            // 3. Add permissions again
+            $data = json_decode($request->permission, true);
+            foreach ($data as $category  => $permissions) {
+                $userPermissions = new UserPermission;
+                $userPermissions->permission = $category;
+                $userPermissions->user_id = $request->user_id;
+                // If no access is givin to secction no need to add record
+                $addModel = false;
+                foreach ($permissions as $action => $allowed) {
+                    // Check if the value is true or false
+                    if ($allowed == "true")
+                        $addModel = true;
+                    if ($action == "add")
+                        $userPermissions->Add = $allowed;
+                    else if ($action == "edit")
+                        $userPermissions->edit = $allowed;
+                    else if ($action == "delete")
+                        $userPermissions->delete = $allowed;
+                    else if ($action == "view")
+                        $userPermissions->view = $allowed;
                 }
+                if ($addModel)
+                    $userPermissions->save();
             }
-        } catch (Exception $err) {
-            Log::info('User change permissions error =>' . $err->getMessage());
-            return response()->json(['message' => "Something went wrong please try again later!"], 500);
         }
-        return response()->json("Success");
-    }
-
-    // Utils
-    private function translations($locale, $user_id)
-    {
-        // Fetch destinations with translations and related destination type translations
-        $query = User::with([
-            'contact:id,value',
-            'email:id,value',
-            'role:id,name',
-            'job.translations' => function ($query) use ($locale) {
-                // Filter translations by locale and select required fields
-                $query->select('id', 'value', 'created_at', 'translable_id')
-                    ->where('language_name', '=', $locale);
-            },
-            'destination.translations' => function ($query) use ($locale) {
-                // Filter translations for the related type by locale
-                $query->select('id', 'value', 'created_at', 'translable_id')
-                    ->where('language_name', '=', $locale);
-            },
-            'permissions' => function ($query) use ($user_id) {
-                // Alias the `user_permissions` table to avoid conflicts
-                $query->select(
-                    'permissions.name as permission',
-                    'permissions.icon as icon',
-                    'permissions.priority as priority',
-                    'user_permissions.view',
-                    'user_permissions.add',
-                    'user_permissions.delete',
-                    'user_permissions.edit',
-                    'user_permissions.id'
-                )
-                    // First join on `user_permissions`
-                    ->join('user_permissions as up', 'permissions.name', '=', 'up.permission')
-                    // Specify the user_id in the where condition
-                    ->where('up.user_id', '=', $user_id) // Assuming you want to filter by the current user
-                    // Order by `permissions.priority`
-                    ->orderBy('permissions.priority');
-            }
-        ])->select('id', 'color', 'destination_type_id', 'created_at');
-
-        // Apply filter for destination type if passed
-        if ($user_id) {
-            $query->where('destination_type_id', '=', $user_id);
-        }
-
-        $destinations = $query->get();
-
-        // Transform the collection
-        $destinations = $destinations->map(function ($destination) {
-            // Get the translated name of the destination
-            $destinationTranslation = $destination->translations->first();
-
-            // Prepare the destination data
-            $destinationData = [
-                'id' => $destination->id,
-                'name' => $destinationTranslation ? $destinationTranslation->value : null,  // Translated name
-                'color' => $destination->color,
-                'createdAt' => $destination->created_at,
-            ];
-
-            // Get the translated name for the destination type
-            $destinationTypeTranslation = $destination->type->translations->first();
-            $destinationData['type'] = [
-                'id' => $destination->destination_type_id,
-                'name' => $destinationTypeTranslation ? $destinationTypeTranslation->value : null,  // Translated name
-                'createdAt' => $destinationTypeTranslation ? $destinationTypeTranslation->created_at : null
-            ];
-
-            // Return transformed destination data
-            return $destinationData;
-        });
-
-        // Return the transformed collection
-        return $destinations;
+        return response()->json([
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 }

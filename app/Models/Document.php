@@ -8,12 +8,12 @@ use ESolution\DBEncryption\Traits\EncryptedAttribute;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Document extends Model  implements Auditable
+class Document extends Model implements Auditable
 {
     use  EncryptedAttribute;
     use \OwenIt\Auditing\Auditable;
     protected $guarded = [];
-    protected $encryptable = ['muqam_statement', 'document_number', 'summary', 'saved_file'];
+    protected $encryptable = ['muqam_statement', 'summary', 'saved_file'];
     public function status()
     {
         return $this->belongsTo(Status::class);

@@ -3,10 +3,18 @@
 namespace App\Http\Controllers;
 
 use App\Enums\RoleEnum;
+use App\Enums\StatusEnum;
 use App\Models\Destination;
+use App\Models\Document;
+use App\Models\DocumentsEnView;
+use App\Models\DocumentsFaView;
+use App\Models\DocumentsPsView;
 use App\Models\RolePermission;
+use App\Models\Scan;
 use App\Models\User;
 use App\Models\UsersEnView;
+use App\Models\UsersFaView;
+use App\Models\UsersPsView;
 use App\Models\UsersView;
 use Exception;
 use Carbon\Carbon;
@@ -35,7 +43,11 @@ class TestController extends Controller
         //     ->get();
 
 
-        return UsersEnView::all();
+        $doc = Document::find(1);
+        $scan = Scan::find($doc->scan_id);
+        $initailScan = storage_path('app/' . "{$scan->initail_scan}");
+        return file_exists($initailScan);
+
 
         // Path to the user_error.log file
         $logFilePath = storage_path('logs/user_error.log');
