@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers\web\generator;
 
-use App\Http\Controllers\Controller;
 use App\Models\ApiKey;
 use Illuminate\Http\Request;
+use App\Traits\template\Auditable;
+use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Hash;
 
 class ApiKeyController extends Controller
@@ -84,6 +85,17 @@ class ApiKeyController extends Controller
                 'hashed_key' => $hashedKey,
                 'is_active' => true,
             ]);
+            // $insertedId = Auditable::insertEncryptedData(ApiKey::class, [
+            //     'name' => $request->name,
+            //     'directorate' => $request->directorate,
+            //     'key' => $key,
+            //     'ip_address' => $ipaddress,
+            //     'hashed_key' => $hashedKey,
+            //     'is_active' => true,
+            // ]);
+            // $$apiKey = ApiKey::find($insertedId);
+            // if ($document)
+            //     Auditable::insertAudit($document, $insertedId);
 
             return response()->json([
                 'api_key' => $key,

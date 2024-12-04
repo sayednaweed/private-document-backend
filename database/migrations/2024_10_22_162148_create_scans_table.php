@@ -13,9 +13,16 @@ return new class extends Migration
     {
         Schema::create('scans', function (Blueprint $table) {
             $table->id();
-            $table->string('initail_scan');
-            $table->string('muqam_scan')->nullable();
-            $table->string('final_scan')->nullable();
+            $table->string('name');
+            $table->string('path');
+            $table->unsignedBigInteger('scan_type_id');
+            $table->foreign('scan_type_id')->references('id')->on('scan_types')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('document_id');
+            $table->foreign('document_id')->references('id')->on('documents')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

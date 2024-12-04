@@ -2,19 +2,17 @@
 
 namespace App\Models;
 
+use Illuminate\Support\Arr;
+use Laravel\Sanctum\HasApiTokens;
+use OwenIt\Auditing\Models\Audit;
+use App\Traits\template\Auditable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use OwenIt\Auditing\Contracts\Auditable;
-use ESolution\DBEncryption\Traits\EncryptedAttribute;
-use Illuminate\Support\Arr;
-use OwenIt\Auditing\Models\Audit;
 
-class User extends Authenticatable implements Auditable
+class User extends Authenticatable
 {
-    use HasFactory, Notifiable, HasApiTokens, EncryptedAttribute;
-    use \OwenIt\Auditing\Auditable;
+    use HasFactory, Notifiable, HasApiTokens, Auditable;
     /**
      * The attributes that are mass assignable.
      *
@@ -22,9 +20,6 @@ class User extends Authenticatable implements Auditable
      */
     protected $guarded = [];
     // protect column should be mention here
-    protected $encryptable = [
-        'name',
-    ];
 
     /**
      * The attributes that should be hidden for serialization.

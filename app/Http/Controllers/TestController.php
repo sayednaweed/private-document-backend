@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Enums\LanguageEnum;
 use App\Enums\RoleEnum;
 use App\Enums\StatusEnum;
 use App\Models\Destination;
@@ -28,25 +29,44 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\File;
 use function Laravel\Prompts\select;
+use App\Traits\template\Auditable;
 
 class TestController extends Controller
 {
     public function index(Request $request)
     {
-        // return User::with([
-        //     'contact:id,value',
-        //     'email:id,value',
-        //     'job:id,name',
-        //     'destination:id,name'  // Eager load destination relationship
-        // ])
-        //     ->select("id", "username", "profile", "status", "job_id", "destination_id", 'email_id', 'contact_id', "created_at as createdAt")
-        //     ->get();
+
+        // $model = Auditable::selectAndDecrypt(Document::class, 28);
+        // $model['summary'] = "Updated By me";
+        // Auditable::updateEncryptedData(Document::class, $model, $model["id"]);
+        // $record = DB::table("documents")->where('id', 22)->first();
+        // return dd(Auditable::selectAndDecrypt("documents", 22));
+
+        $doc_id = 1; // Example doc_id (replace with your actual doc_id)
+        $encryption_key = config('encryption.aes_key'); // The encryption key used for AES_DECRYPT (replace with your actual key)
+
+        // Call the stored procedure using DB::select
+        $result = DB::select('CALL GetDocInfo(:doc_id, :encryption_key,:lang)', [
+            'doc_id' => $doc_id,
+            'encryption_key' => $encryption_key,
+            'lang' => LanguageEnum::pashto->value,
+        ]);
+        return $result;
+
+        $key = config('encryption.aes_key'); // The key for encryption
+        $value = 'Naweed';
+        $encryptedValue = DB::select('SELECT AES_ENCRYPT(?, ?) AS encrypted_value', [$value, $key]);
+
+        // Access the encrypted value from the result set
+        // Access the encrypted value from the result set
+        $encryptedValue = $encryptedValue[0]->encrypted_value;
 
 
-        $doc = Document::find(1);
-        $scan = Scan::find($doc->scan_id);
-        $initailScan = storage_path('app/' . "{$scan->initail_scan}");
-        return file_exists($initailScan);
+        // The result will be an array, so you may want to extract the encrypted value like so:
+        return $encryptedValue;
+
+        $documentDetails = DB::select('CALL GetDocInfo(?,?)', [1]);
+        return base64_encode(openssl_random_pseudo_bytes(32));
 
 
         // Path to the user_error.log file

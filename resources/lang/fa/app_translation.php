@@ -22,4 +22,6 @@ return [
     'source_not_found' => 'منبع یافت نشد.',
     'urgency_not_found' => 'استعجالیت پیدا نشد.',
     'status_not_found' => 'حالت یافت نشد.',
+    'email_not_found' => 'ایمیل پیدا نشد.',
+    'file_not_found' => 'فایل پیدا نشد.',
 ];

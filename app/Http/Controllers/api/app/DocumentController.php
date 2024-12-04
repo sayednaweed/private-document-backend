@@ -3,10 +3,10 @@
 namespace App\Http\Controllers\api\app;
 
 use App\Enums\LanguageEnum;
+use App\Enums\ScanTypeEnum;
 use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\app\document\DocumentStoreRequest;
-use App\Models\Destination;
 use App\Models\Document;
 use App\Models\DocumentsEnView;
 use App\Models\DocumentsFaView;
@@ -16,10 +16,11 @@ use App\Models\Scan;
 use App\Models\Source;
 use App\Models\Status;
 use App\Models\Urgency;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\App;
+use Illuminate\Support\Facades\DB;
+use App\Traits\template\Auditable;
+
 
 class DocumentController extends Controller
 {
@@ -90,129 +91,147 @@ class DocumentController extends Controller
             JSON_UNESCAPED_UNICODE
         );
     }
-
     public function document($id)
     {
-        $documentId = $id; // Replace with the specific document ID you want to load
-        $documents = Document::with([
-            'status:id,name,color',
-            'source:id,name',
-            'urgency:id,name',
-            'type:id,name',
-            'documentDestination' => function ($query) {
-                $query->orderBy('id'); // Optionally order the related records
-            }
-        ])
-            ->where('id', $documentId) // Filter by specific document ID
+        $document = Document::find($id)
+            ->with([
+                'status:id,name,color',
+                'source:id,name',
+                'urgency:id,name',
+                'type:id,name',
+                'documentDestination' => function ($query) {
+                    $query->orderBy('id'); // Optionally order the related records
+                }
+            ])
             ->select('*') // Load all columns from the documents table
             ->get();
 
         // Append the first deadline from the `documentDestination` table
-        $documents->each(function ($document) {
-            $document->deadline = $document->documentDestination->first()->deadline ?? null;
-        });
+        // $documents->each(function ($document) {
+        //     $document->deadline = $document->documentDestination->first()->deadline ?? null;
+        // });
 
-        return $documents;
+        return response()->json([
+            'document' => $document
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return;
+    }
+    public function information($id)
+    {
+        $locale = App::getLocale();
+        $encryption_key = config('encryption.aes_key'); // The encryption key used for AES_DECRYPT (replace with your actual key)
+        $information =  DB::selectOne('CALL GetDocInfo(:doc_id, :encryption_key,:lang)', [
+            'doc_id' => $id,
+            'encryption_key' => $encryption_key,
+            'lang' => $locale,
+        ]);
+
+        return response()->json([
+            'information' => $information
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return;
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
+
     public function store(DocumentStoreRequest $request)
     {
         $request->validated();
-        try {
-            // 1. validate
-            $source = Source::find($request->source);
-            if (!$source) {
-                return response()->json([
-                    'message' => __('app_translation.source_not_found')
-                ], 200, [], JSON_UNESCAPED_UNICODE);
-            }
-            $urgency = Urgency::find($request->urgency);
-            if (!$urgency) {
-                return response()->json([
-                    'message' => __('app_translation.urgency_not_found')
-                ], 200, [], JSON_UNESCAPED_UNICODE);
-            }
-            $status = Status::find(StatusEnum::inProgres->value);
-            if (!$status) {
-                return response()->json([
-                    'message' => __('app_translation.status_not_found')
-                ], 200, [], JSON_UNESCAPED_UNICODE);
-            }
-            $documentType = DocumentType::find($request->documentType);
-            if (!$documentType) {
-                return response()->json([
-                    'message' => __('app_translation.destination_type_not_found')
-                ], 200, [], JSON_UNESCAPED_UNICODE);
-            }
-            // 2. store document
-            $path = $this->storeDocument($request, $documentType->name);
-            $scan = Scan::create([
-                "initail_scan" => $path
-            ]);
-            $document = Document::create([
-                'document_number' => $request->documentNumber,
-                'summary' => $request->subject,
-                'qaid_warida_number' => $request->qaidWarida,
-                'document_date' => $request->documentDate,
-                'qaid_warida_date' => $request->qaidWaridaDate,
-                'document_type_id' => $documentType->id,
-                'status_id' => StatusEnum::inProgres->value,
-                'urgency_id' => $request->urgency,
-                'source_id' => $request->source,
-                'scan_id' => $scan->id,
-                'reciever_user_id' => $request->user()->id,
-                "send_to_muqam" => true
-            ]);
-
-            // 2. Store destinations
-            // $references = json_decode($request->reference, true);
-            // $length = count($references);
-            // $step = 1;
-            // if ($length >= 2) {
-            //     $step = 0;
-            // }
-            // if ($request->feedback == "true") {
-            //     foreach ($references as $reference) {
-            //         $destinationId = $reference['id'];
-            //         DocumentDestination::create([
-            //             'step' => $step,
-            //             'document_id' => $document->id,
-            //             'destination_id' => $destinationId,
-            //         ]);
-            //     }
-            // } else {
-            //     foreach ($references as $reference) {
-            //         $destinationId = $reference['id'];
-            //         DocumentDestinationNoFeed::create([
-            //             'document_id' => $document->id,
-            //             'destination_id' => $destinationId,
-            //         ]);
-            //     }
-            // }
+        // 1. validate
+        $source = Source::find($request->source);
+        if (!$source) {
             return response()->json([
-                'message' => __('app_translation.success'),
-                'document' => [
-                    "id" => $document->id,
-                    "documentDate" => $document->document_date,
-                    "documentNumber" => $document->document_number,
-                    "createdAt" => $document->created_at,
-                    "status" => $this->getTranslationWithNameColumn($status, Status::class),
-                    "statusColor" => $status->color,
-                    "urgency" => $this->getTranslationWithNameColumn($urgency, Urgency::class),
-                    "type" => $this->getTranslationWithNameColumn($documentType, DocumentType::class),
-                    "source" =>  $this->getTranslationWithNameColumn($source, Source::class),
-                    "deadline" => null
-                ]
+                'message' => __('app_translation.source_not_found')
             ], 200, [], JSON_UNESCAPED_UNICODE);
-        } catch (Exception $err) {
-            Log::info('Urgencies error =>' . $err->getMessage());
-            return response()->json([
-                'message' => __('app_translation.server_error')
-            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
+        $urgency = Urgency::find($request->urgency);
+        if (!$urgency) {
+            return response()->json([
+                'message' => __('app_translation.urgency_not_found')
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        $status = Status::find(StatusEnum::inProgres->value);
+        if (!$status) {
+            return response()->json([
+                'message' => __('app_translation.status_not_found')
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        $documentType = DocumentType::find($request->documentType);
+        if (!$documentType) {
+            return response()->json([
+                'message' => __('app_translation.destination_type_not_found')
+            ], 200, [], JSON_UNESCAPED_UNICODE);
+        }
+        // 2. store document
+        $uploadedDoc = $this->storeDocument($request, $documentType->name);
+        if ($uploadedDoc == null) {
+            return response()->json([
+                'message' => __('app_translation.file_not_found')
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $insertedId = Auditable::insertEncryptedData(Document::class, [
+            "document_number" => $request->documentNumber,
+            "summary" => $request->subject,  // The value to be encrypted
+            "muqam_statement" => "Hello Naweed",  // The value to be encrypted
+            "qaid_warida_number" => $request->qaidWarida,
+            "document_date" => $request->documentDate,
+            "qaid_warida_date" => $request->qaidWaridaDate,
+            "document_type_id" => $documentType->id,
+            "status_id" => StatusEnum::inProgres->value,
+            "urgency_id" => $request->urgency,
+            "source_id" => $request->source,
+            "reciever_user_id " => request()->user()->id,
+            "old" => false,  // "old" column
+        ]);
+        $document = Document::find($insertedId);
+        if ($document)
+            Auditable::insertAudit($document, $insertedId);
+        Scan::create([
+            "path" => $uploadedDoc['path'],
+            "name" => $uploadedDoc['name'],
+            "scan_type_id" => ScanTypeEnum::initail_scan->value,
+            "document_id" => $document->id,
+        ]);
+
+        // 2. Store destinations
+        // $references = json_decode($request->reference, true);
+        // $length = count($references);
+        // $step = 1;
+        // if ($length >= 2) {
+        //     $step = 0;
+        // }
+        // if ($request->feedback == "true") {
+        //     foreach ($references as $reference) {
+        //         $destinationId = $reference['id'];
+        //         DocumentDestination::create([
+        //             'step' => $step,
+        //             'document_id' => $document->id,
+        //             'destination_id' => $destinationId,
+        //         ]);
+        //     }
+        // } else {
+        //     foreach ($references as $reference) {
+        //         $destinationId = $reference['id'];
+        //         DocumentDestinationNoFeed::create([
+        //             'document_id' => $document->id,
+        //             'destination_id' => $destinationId,
+        //         ]);
+        //     }
+        // }
+        return response()->json([
+            'message' => __('app_translation.success'),
+            'document' => [
+                "id" => $document->id,
+                "documentDate" => $document->document_date,
+                "documentNumber" => $document->document_number,
+                "createdAt" => $document->created_at,
+                "status" => $this->getTranslationWithNameColumn($status, Status::class),
+                "statusColor" => $status->color,
+                "urgency" => $this->getTranslationWithNameColumn($urgency, Urgency::class),
+                "type" => $this->getTranslationWithNameColumn($documentType, DocumentType::class),
+                "source" =>  $this->getTranslationWithNameColumn($source, Source::class),
+                "deadline" => null
+            ]
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
     public function destroy($id)
@@ -220,19 +239,14 @@ class DocumentController extends Controller
         $document = Document::find($id);
         if ($document) {
             // 1. Delete documents
-            $scan = Scan::find($document->scan_id);
-            if ($scan) {
-                $initailScan = storage_path('app/' . "{$scan->initail_scan}");
-                if ($scan->initail_scan && file_exists($initailScan)) {
-                    unlink($initailScan);
-                }
-                $muqamScan = storage_path('app/' . "{$scan->muqam_scan}");
-                if ($scan->muqam_scan && file_exists($muqamScan)) {
-                    unlink($muqamScan);
-                }
-                $finalScan = storage_path('app/' . "{$scan->final_scan}");
-                if ($scan->final_scan && file_exists($finalScan)) {
-                    unlink($finalScan);
+            $scans = Scan::where("document_id", '=', $document->id)->get();
+            if ($scans) {
+                $scans = Scan::where("document_id", '=', 1)->get();
+                foreach ($scans as $scan) {
+                    $path = storage_path('app/' . "{$scan->path}");
+                    if (file_exists($path)) {
+                        unlink($path);
+                    }
                 }
                 $document->delete();
             } else {

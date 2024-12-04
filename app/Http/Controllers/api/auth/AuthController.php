@@ -30,14 +30,14 @@ class AuthController extends Controller
                 "id" => $user->id,
                 "fullName" => $user->full_name,
                 "username" => $user->username,
-                'email' => $user->email,
+                'email' => $user->email ? $user->email->value : "",
                 "profile" => $user->profile,
                 "status" => $user->status,
                 "grantPermission" => $user->grant_permission,
                 "role" => ["role" => $user->role->id, "name" => $user->role->name],
-                'contact' => $user->contact,
-                "destination" => ["id" => $user->destination->id, "name" => $this->getTranslationWithNameColumn($user->destination, Destination::class)],
-                "job" => ["id" => $user->destination->id, "name" => $this->getTranslationWithNameColumn($user->job, ModelJob::class)],
+                'contact' => $user->contact ? $user->contact->value : "",
+                "destination" => $user->destination ? $this->getTranslationWithNameColumn($user->destination, Destination::class) : "",
+                "job" => $user->job ? $this->getTranslationWithNameColumn($user->job, ModelJob::class) : "",
                 "createdAt" => $user->created_at,
             ]
         ], [
@@ -48,6 +48,11 @@ class AuthController extends Controller
     {
         $credentials = $request->validated();
         $email = Email::where('value', '=', $credentials['email'])->first();
+        if (!$email) {
+            return response()->json([
+                'message' => __('app_translation.email_not_found'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        }
         $user = User::where('email_id', '=', $email->id)->first();
         if ($user) {
             if ($user->status == 0) {
@@ -74,14 +79,14 @@ class AuthController extends Controller
                         "id" => $user->id,
                         "fullName" => $user->full_name,
                         "username" => $user->username,
-                        'email' => $user->email,
+                        'email' => $user->email ? $user->email->value : "",
                         "profile" => $user->profile,
                         "status" => $user->status,
                         "grantPermission" => $user->grant_permission,
                         "role" => ["role" => $user->role->id, "name" => $user->role->name],
-                        'contact' => $user->contact,
-                        "destination" => ["id" => $user->destination->id, "name" => $this->getTranslationWithNameColumn($user->destination, Destination::class)],
-                        "job" => ["id" => $user->destination->id, "name" => $this->getTranslationWithNameColumn($user->job, ModelJob::class)],
+                        'contact' => $user->contact ? $user->contact->value : "",
+                        "destination" => $user->destination ? $this->getTranslationWithNameColumn($user->destination, Destination::class) : "",
+                        "job" => $user->job ? $this->getTranslationWithNameColumn($user->job, ModelJob::class) : "",
                         "createdAt" => $user->created_at,
                     ]
                 ], [

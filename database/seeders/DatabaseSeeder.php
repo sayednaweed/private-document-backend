@@ -10,6 +10,7 @@ use App\Models\Contact;
 use App\Models\Country;
 use App\Models\Destination;
 use App\Models\District;
+use App\Models\DocumentType;
 use App\Models\Email;
 use App\Models\Language;
 use App\Models\ModelJob;
@@ -17,8 +18,11 @@ use App\Models\Permission;
 use App\Models\Province;
 use App\Models\Role;
 use App\Models\RolePermission;
+use App\Models\ScanType;
+use App\Models\Source;
 use App\Models\Status;
 use App\Models\Translate;
+use App\Models\Urgency;
 use App\Models\User;
 use App\Models\UserPermission;
 use Illuminate\Database\Seeder;
@@ -34,6 +38,10 @@ class DatabaseSeeder extends Seeder
         // User::factory(10)->create();
         $this->languages();
         $this->statuses();
+        $this->urgencies();
+        $this->documentTypes();
+        $this->sources();
+        $this->scanTypes();
         $email =  Email::factory()->create([
             "value" => "super@admin.com"
         ]);
@@ -197,16 +205,77 @@ class DatabaseSeeder extends Seeder
         ]);
         $complete = Status::factory()->create([
             "name" => "Complete",
-            "color" => "#008B8B",
+            "color" => "#008000",
         ]);
         $this->Translate("در حال اجرا", "fa", $inProgres->id, Status::class);
-        $this->Translate("در حال اجرا", "ps", $inProgres->id, Status::class);
+        $this->Translate("اجرا په حال کی", "ps", $inProgres->id, Status::class);
 
         $this->Translate("حفظ", "fa", $keep->id, Status::class);
         $this->Translate("ساتل", "ps", $keep->id, Status::class);
 
         $this->Translate("تکمیل", "fa", $complete->id, Status::class);
-        $this->Translate("تکمیل", "ps", $complete->id, Status::class);
+        $this->Translate("بشپړ", "ps", $complete->id, Status::class);
+    }
+    public function urgencies()
+    {
+        $urgent = Urgency::factory()->create([
+            "name" => "Urgent",
+        ]);
+        $this->Translate("عاجل", "fa", $urgent->id, Urgency::class);
+        $this->Translate("بیړنی", "ps", $urgent->id, Urgency::class);
+
+        $normal = Urgency::factory()->create([
+            "name" => "Normal",
+        ]);
+        $this->Translate("عادی", "fa", $normal->id, Urgency::class);
+        $this->Translate("عادی", "ps", $normal->id, Urgency::class);
+    }
+    public function sources()
+    {
+        $wezara = Source::factory()->create([
+            "name" => "Ministers Directorate",
+        ]);
+        $this->Translate("ریاست الوزرا", "fa", $wezara->id, Source::class);
+        $this->Translate("ریاست الوزرا", "ps", $wezara->id, Source::class);
+
+        $amir = Source::factory()->create([
+            "name" => "Amir al-Mu'minin",
+        ]);
+        $this->Translate("امیرالمؤمنین", "fa", $amir->id, Source::class);
+        $this->Translate("امیرالمؤمنین", "ps", $amir->id, Source::class);
+    }
+    public function documentTypes()
+    {
+        $hokom = DocumentType::factory()->create([
+            "name" => "Command",
+        ]);
+        $this->Translate("حکم", "fa", $hokom->id, DocumentType::class);
+        $this->Translate("حکم", "ps", $hokom->id, DocumentType::class);
+
+        $farman = DocumentType::factory()->create([
+            "name" => "Decree",
+        ]);
+        $this->Translate("فرمان", "fa", $farman->id, DocumentType::class);
+        $this->Translate("فرمان", "ps", $farman->id, DocumentType::class);
+    }
+    public function scanTypes()
+    {
+        $initial = ScanType::factory()->create([
+            "name" => "Initial Scan",
+        ]);
+        $this->Translate("اسکن اولیه", "fa", $initial->id, ScanType::class);
+        $this->Translate("اسکن اولیه", "ps", $initial->id, ScanType::class);
+
+        $muqam = ScanType::factory()->create([
+            "name" => "After Muqaam Scan",
+        ]);
+        $this->Translate("اسکن بعد از مقام", "fa", $muqam->id, ScanType::class);
+        $this->Translate("اسکن بعد از مقام", "ps", $muqam->id, ScanType::class);
+        $final = ScanType::factory()->create([
+            "name" => "Final Scan",
+        ]);
+        $this->Translate("اسکن نهایی", "fa", $final->id, ScanType::class);
+        $this->Translate("اسکن نهایی", "ps", $final->id, ScanType::class);
     }
     // Add list of languages here
     public function languages(): void
@@ -224,6 +293,7 @@ class DatabaseSeeder extends Seeder
     // Add list of countries here
     public function destinations($directorate): void
     {
+        // Change destination types
         $destination = [
 
             "Directorate of Information Technology" => [

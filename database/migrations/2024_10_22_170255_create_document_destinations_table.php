@@ -16,8 +16,9 @@ return new class extends Migration
             $table->integer('step');
             $table->string('recieve_date')->nullable();
             $table->timestamp('send_date')->useCurrent();
-            $table->integer('deadline');
-            $table->text('response')->nullable();
+            $table->string('deadline')->nullable();
+            $table->string('feedback_date')->nullable();
+            $table->text('feedback')->nullable();
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')

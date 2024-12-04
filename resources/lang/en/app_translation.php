@@ -22,4 +22,6 @@ return [
     'source_not_found' => 'Source Not Found.',
     'urgency_not_found' => 'Urgency Not Found.',
     'status_not_found' => 'Status Not Found.',
+    'email_not_found' => 'Email Not Found.',
+    'file_not_found' => 'File Not Found.',
 ];
