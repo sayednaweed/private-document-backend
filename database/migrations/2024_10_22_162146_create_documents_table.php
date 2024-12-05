@@ -15,13 +15,8 @@ return new class extends Migration
             $table->id();
             $table->string('document_number', 64);
             $table->binary('summary');
-            $table->binary('muqam_statement')->nullable();
-            $table->string('qaid_warida_number');
-            $table->string('qaid_sadira_number')->nullable();
-            $table->binary('saved_file')->nullable()->comment('In book shell document is saved');
+            $table->binary('saved_file')->nullable()->comment('In Which book shell document is saved');
             $table->string('document_date');
-            $table->string('qaid_warida_date');
-            $table->string('qaid_sadira_date')->nullable();
             $table->boolean('disabled');
             $table->boolean('old');
             $table->unsignedBigInteger('document_type_id');
@@ -44,7 +39,7 @@ return new class extends Migration
             $table->foreign('reciever_user_id')->references('id')->on('users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->index(['document_type_id', 'source_id', 'urgency_id', 'status_id']);
+            $table->index(['document_type_id', 'source_id', 'urgency_id', 'status_id'], 'doc_type_source_urgency_status_idx');
             $table->timestamps();
         });
     }

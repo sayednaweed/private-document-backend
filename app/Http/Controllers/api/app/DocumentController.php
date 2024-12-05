@@ -116,6 +116,17 @@ class DocumentController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
         return;
     }
+    public function updateInformation(Request $request)
+    {
+        $request->validated();
+
+
+
+        return response()->json([
+            'information' => ""
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+        return;
+    }
     public function information($id)
     {
         $locale = App::getLocale();

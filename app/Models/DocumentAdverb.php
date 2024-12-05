@@ -5,8 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Approval extends Model
+class DocumentAdverb extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApprovalFactory> */
+    /** @use HasFactory<\Database\Factories\DocumentAdverbFactory> */
     use HasFactory;
 }

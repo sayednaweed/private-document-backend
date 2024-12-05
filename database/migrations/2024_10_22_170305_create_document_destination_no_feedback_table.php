@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('document_destination_no_feeds', function (Blueprint $table) {
+        Schema::create('document_destination_no_feedback', function (Blueprint $table) {
             $table->id();
             $table->timestamp('send_date')->useCurrent();
             $table->unsignedBigInteger('document_id');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->foreign('destination_id')->references('id')->on('destinations')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
-            $table->index(['destination_id', 'document_id']);
+            $table->index(['destination_id', 'document_id'], 'destination_document');
             $table->timestamps();
         });
     }

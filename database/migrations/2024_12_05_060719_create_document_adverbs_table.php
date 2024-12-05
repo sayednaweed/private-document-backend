@@ -11,19 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('document_destinations', function (Blueprint $table) {
+        Schema::create('document_adverbs', function (Blueprint $table) {
             $table->id();
-            $table->integer('step');
-            $table->string('deadline')->nullable();
-            $table->string('feedback_date')->nullable();
-            $table->timestamp('send_date')->useCurrent();
-            $table->text('feedback')->nullable();
+            $table->string("date");
+            $table->string("number");
+            $table->unsignedBigInteger('adverb_type_id');
+            $table->foreign('adverb_type_id')->references('id')->on('adverb_types')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
-                ->onDelete('no action');
-            $table->unsignedBigInteger('destination_id');
-            $table->index(['document_id']);
+                ->onDelete('cascade');
+            $table->index(['adverb_type_id', 'document_id']);
             $table->timestamps();
         });
     }
@@ -33,6 +33,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('document_destinations');
+        Schema::dropIfExists('document_adverbs');
     }
 };
