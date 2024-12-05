@@ -5,6 +5,7 @@ namespace Database\Seeders;
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 
 use App\Enums\RoleEnum;
+use App\Models\AdverbType;
 use App\Models\DestinationType;
 use App\Models\Contact;
 use App\Models\Country;
@@ -16,11 +17,15 @@ use App\Models\Language;
 use App\Models\ModelJob;
 use App\Models\Permission;
 use App\Models\Province;
+use App\Models\RequestType;
 use App\Models\Role;
 use App\Models\RolePermission;
 use App\Models\ScanType;
+use App\Models\Setting;
+use App\Models\SettingTimeUnit;
 use App\Models\Source;
 use App\Models\Status;
+use App\Models\TimeUnit;
 use App\Models\Translate;
 use App\Models\Urgency;
 use App\Models\User;
@@ -42,6 +47,9 @@ class DatabaseSeeder extends Seeder
         $this->documentTypes();
         $this->sources();
         $this->scanTypes();
+        $this->settings();
+        $this->requestTypes();
+        $this->adverbs();
         $email =  Email::factory()->create([
             "value" => "super@admin.com"
         ]);
@@ -76,6 +84,7 @@ class DatabaseSeeder extends Seeder
         $this->Translate("مدیر", "fa", $job->id, ModelJob::class);
         $this->Translate("مدیر", "ps", $job->id, ModelJob::class);
 
+        $this->offic($muqam);
         $this->destinations($directorate);
         User::factory()->create([
             'full_name' => 'Sayed Naweed Sayedy',
@@ -244,6 +253,65 @@ class DatabaseSeeder extends Seeder
         $this->Translate("امیرالمؤمنین", "fa", $amir->id, Source::class);
         $this->Translate("امیرالمؤمنین", "ps", $amir->id, Source::class);
     }
+    public function settings()
+    {
+        $day = TimeUnit::factory()->create([
+            "name" => "Day",
+        ]);
+        $this->Translate("روز", "fa", $day->id, TimeUnit::class);
+        $this->Translate("ورځ", "ps", $day->id, TimeUnit::class);
+        $hour = TimeUnit::factory()->create([
+            "name" => "Hour",
+        ]);
+        $this->Translate("ساعت", "fa", $hour->id, TimeUnit::class);
+        $this->Translate("ساعت", "ps", $hour->id, TimeUnit::class);
+        $minute = TimeUnit::factory()->create([
+            "name" => "Minute",
+        ]);
+        $this->Translate("دقیقه", "fa", $minute->id, TimeUnit::class);
+        $this->Translate("دقیقه", "ps", $minute->id, TimeUnit::class);
+
+        $documentLock = Setting::factory()->create([
+            "name" => "document_lock",
+            "value" => "1",
+        ]);
+
+        SettingTimeUnit::factory()->create([
+            "time_unit_id" => $day->id,
+            "setting_id" => $documentLock->id,
+        ]);
+    }
+    public function requestTypes()
+    {
+        $delete = RequestType::factory()->create([
+            "name" => "Delete",
+            "description" => "Cases which relates to delete operation.",
+        ]);
+        $this->Translate("حذف", "fa", $delete->id, RequestType::class);
+        $this->Translate("لرې کول", "ps", $delete->id, RequestType::class);
+
+        $edit = RequestType::factory()->create([
+            "name" => "Edit",
+            "description" => "Cases which relates to edit operation.",
+        ]);
+        $this->Translate("ویرایش", "fa", $edit->id, RequestType::class);
+        $this->Translate("سمون", "ps", $edit->id, RequestType::class);
+
+        $view = RequestType::factory()->create([
+            "name" => "View",
+            "description" => "Cases which relates to view operation.",
+        ]);
+        $this->Translate("مشاهده", "fa", $view->id, RequestType::class);
+        $this->Translate("لید", "ps", $view->id, RequestType::class);
+
+
+        $unlock = RequestType::factory()->create([
+            "name" => "Unlock",
+            "description" => "Cases which relates to unlock operation.",
+        ]);
+        $this->Translate("باز کردن قفل", "fa", $unlock->id, RequestType::class);
+        $this->Translate("خلاصول", "ps", $unlock->id, RequestType::class);
+    }
     public function documentTypes()
     {
         $hokom = DocumentType::factory()->create([
@@ -257,6 +325,20 @@ class DatabaseSeeder extends Seeder
         ]);
         $this->Translate("فرمان", "fa", $farman->id, DocumentType::class);
         $this->Translate("فرمان", "ps", $farman->id, DocumentType::class);
+    }
+    public function adverbs()
+    {
+        $qaidWarida = AdverbType::factory()->create([
+            "name" => "Qaid Warida",
+        ]);
+        $this->Translate("قید وارده", "fa", $qaidWarida->id, AdverbType::class);
+        $this->Translate("قید وارده", "ps", $qaidWarida->id, AdverbType::class);
+
+        $qaidSadira = AdverbType::factory()->create([
+            "name" => "Qaid Sadira",
+        ]);
+        $this->Translate("قید صادره", "fa", $qaidSadira->id, AdverbType::class);
+        $this->Translate("قید صادره", "ps", $qaidSadira->id, AdverbType::class);
     }
     public function scanTypes()
     {
@@ -299,11 +381,6 @@ class DatabaseSeeder extends Seeder
             "Directorate of Information Technology" => [
                 "fa" => "ریاست تکنالوژی معلوماتی ",
                 "ps" => "د معلوماتي ټکنالوژۍ ریاست",
-            ],
-
-            "Ministers Office" => [
-                "fa" => "مقام وزارت ",
-                "ps" => "د وزارت مقام",
             ],
             "General Directorate of Office, Documentation, and Communication" => [
                 "fa" => "ریاست عمومی دفتر٬ اسناد و ارتباط",
@@ -380,11 +457,6 @@ class DatabaseSeeder extends Seeder
                 "ps" => "د ولایتونو د روغتیا همغږۍ ریاست ",
             ],
 
-            "Deputy Ministry of Health Service Delivery" => [
-                "fa" => " معینیت عرضه خدمات صحی",
-                "ps" => "د روغتیايي خدمتونو وړاندې کولو معینیت",
-            ],
-
             "General Directorate of Curative Medicine" => [
                 "fa" => "ریاست عمومی طب معالجوی  ",
                 "ps" => "د معالجوي طب لوی ریاست",
@@ -445,11 +517,6 @@ class DatabaseSeeder extends Seeder
                 "ps" => "ناڅاپي پېښو ته د رسېدنې آمریت",
             ],
 
-            "Deputy Ministry of Health Policy and Development" => [
-                "fa" => "معینیت پالیسی و انکشاف صحت  ",
-                "ps" => "د روغتیايي پراختیا او پالیسۍ معینیت",
-            ],
-
             "Directorate of Private Sector Coordination" => [
                 "fa" => "ریاست تنظیم هماهنگی سکتور خصوصی ",
                 "ps" => "د خصوصي سکتور د همغږۍ او تنظیم ریاست",
@@ -505,11 +572,6 @@ class DatabaseSeeder extends Seeder
                 "ps" => "د تقنین او حقوقي چارو ریاست",
             ],
 
-            "Deputy Ministry of Medicine and Food" => [
-                "fa" => "معینیت دوا و غذا  ",
-                "ps" => "د حوړو او درملو معینیت",
-            ],
-
             "General Directorate of Pharmaceutical and Health Products Regulation" => [
                 "fa" => " ریاست عمومی تنظیم ادویه و محصولات صحی ",
                 "ps" => "د درملو او روغتیايي محصولاتو د ترتیب لوی ریاست",
@@ -559,11 +621,6 @@ class DatabaseSeeder extends Seeder
             "Directorate of Pharmaceutical Services" => [
                 "fa" => "ریاست خدمات دوایی ",
                 "ps" => "د درملي خدمتونو ریاست",
-            ],
-
-            "Deputy Ministry of Finance and Administration" => [
-                "fa" => " معینیت مالی و اداری ",
-                "ps" => "د مالي او اداري چارو معینیت",
             ],
 
             "Directorate of Overseas Health Coordination Centers" => [
@@ -655,6 +712,46 @@ class DatabaseSeeder extends Seeder
             }
         }
     }
+    public function offic($offic): void
+    {
+        // Change destination types
+        $destination = [
+            "Deputy Ministry of Health Service Delivery" => [
+                "fa" => " معینیت عرضه خدمات صحی",
+                "ps" => "د روغتیايي خدمتونو وړاندې کولو معینیت",
+            ],
+            "Deputy Ministry of Medicine and Food" => [
+                "fa" => "معینیت دوا و غذا  ",
+                "ps" => "د حوړو او درملو معینیت",
+            ],
+            "Ministers Office" => [
+                "fa" => "مقام وزارت ",
+                "ps" => "د وزارت مقام",
+            ],
+            "Deputy Ministry of Finance and Administration" => [
+                "fa" => " معینیت مالی و اداری ",
+                "ps" => "د مالي او اداري چارو معینیت",
+            ],
+            "Deputy Ministry of Health Policy and Development" => [
+                "fa" => "معینیت پالیسی و انکشاف صحت  ",
+                "ps" => "د روغتیايي پراختیا او پالیسۍ معینیت",
+            ],
+        ];
+        foreach ($destination as $name => $destinations) {
+            // Create the country record
+            $dst = Destination::factory()->create([
+                "name" => trim($name),
+                "color" => "#B4D455",
+                "destination_type_id" => $offic->id,
+            ]);
+            // Loop through translations (e.g., fa, ps)
+            foreach ($destinations as $key => $value) {
+                $this->Translate($value, $key, $dst->id, Destination::class);
+                $this->Translate(trim($value), trim($key), $dst->id, Destination::class);
+            }
+        }
+    }
+
     public function countries(): void
     {
         $country = [

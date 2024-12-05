@@ -5,8 +5,9 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class Approval extends Model
+class AdverbType extends Model
 {
-    /** @use HasFactory<\Database\Factories\ApprovalFactory> */
+    /** @use HasFactory<\Database\Factories\AdverbTypeFactory> */
     use HasFactory;
+    protected $guarded = [];
 }
