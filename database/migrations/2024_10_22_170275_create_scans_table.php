@@ -23,6 +23,10 @@ return new class extends Migration
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
                 ->onDelete('cascade');
+            $table->unsignedBigInteger('document_destination_id');
+            $table->foreign('document_destination_id')->references('id')->on('document_destinations')
+                ->onUpdate('cascade')
+                ->onDelete('cascade');
             $table->timestamps();
         });
     }

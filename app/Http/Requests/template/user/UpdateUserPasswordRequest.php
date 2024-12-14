@@ -23,8 +23,7 @@ class UpdateUserPasswordRequest extends FormRequest
     {
         return [
             "id" => ["required"],
-            "oldPassword" => ["required", "min:8", "max:45"],
-            "newPassword" => ["required", "different:oldPassword", "min:8", "max:45"],
+            "newPassword" => ["required", "min:8", "max:45"],
             "confirmPassword" => ["required", "same:newPassword", "min:8", "max:45"],
         ];
     }

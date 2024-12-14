@@ -2,11 +2,11 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\template\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class DocumentAdverb extends Model
 {
-    /** @use HasFactory<\Database\Factories\DocumentAdverbFactory> */
-    use HasFactory;
+    use  HasFactory, Auditable;
 }

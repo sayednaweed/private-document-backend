@@ -24,8 +24,7 @@ return new class extends Migration
             st.color AS statusColor, -- Assuming color is part of the status model
             u.urgency,
             dt.type,
-            s.source,
-            dd.deadline
+            s.source
         FROM documents d
         LEFT JOIN (
             SELECT translable_id, value AS status, color
@@ -45,7 +44,7 @@ return new class extends Migration
         LEFT JOIN ( 
             SELECT translable_id, value AS type 
             FROM translates
-            WHERE translable_type = 'App\\Models\\DestinationType' 
+            WHERE translable_type = 'App\\Models\\DocumentType' 
             AND language_name = 'ps'
             GROUP BY translable_id
         ) dt ON d.document_type_id = dt.translable_id
@@ -55,8 +54,7 @@ return new class extends Migration
             WHERE translable_type = 'App\\Models\\Source' 
             AND language_name = 'ps'
             GROUP BY translable_id
-        ) s ON d.source_id = s.translable_id
-        LEFT JOIN document_destinations dd ON d.id = dd.id;
+        ) s ON d.source_id = s.translable_id;
     ");
     }
 

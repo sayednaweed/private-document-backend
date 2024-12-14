@@ -17,13 +17,20 @@ return new class extends Migration
             $table->string('deadline')->nullable();
             $table->string('feedback_date')->nullable();
             $table->timestamp('send_date')->useCurrent();
-            $table->text('feedback')->nullable();
+            $table->binary('feedback')->nullable();
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->unsignedBigInteger('destination_id');
-            $table->index(['document_id']);
+            $table->foreign('destination_id')->references('id')->on('destinations')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('reciever_user_id');
+            $table->foreign('reciever_user_id')->references('id')->on('users')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
+            $table->index(['document_id', 'reciever_user_id', 'destination_id'], 'document_reciever_destination');
             $table->timestamps();
         });
     }

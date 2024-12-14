@@ -11,5 +11,9 @@ return [
         'id' => 'اد',
         'name' => 'نام کامل',
         "username" => "نام کاربری",
+        'reference' => 'مرجع',
+        'destination' => 'موقعیت',
+        "savedFile" => "کتاب مربوطه",
+        "oldPassword" => "رمز عبور قدیمی"
     ],
 ];

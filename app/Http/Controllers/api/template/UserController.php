@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\api\template;
 
 use App\Enums\LanguageEnum;
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\template\user\UpdateUserPasswordRequest;
 use App\Http\Requests\template\user\UpdateUserRequest;
@@ -11,6 +12,7 @@ use App\Models\Contact;
 use App\Models\Destination;
 use App\Models\Email;
 use App\Models\ModelJob;
+use App\Models\RolePermission;
 use App\Models\User;
 use App\Models\UserPermission;
 use App\Models\UsersEnView;
@@ -18,7 +20,6 @@ use App\Models\UsersFaView;
 use App\Models\UsersPsView;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Hash;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\App;
@@ -95,27 +96,18 @@ class UserController extends Controller
     public function user($id, Request $request)
     {
         // 1. Retrive current user all permissions
-        $foundUser = User::with(['permissions', 'contact', 'email', 'role', 'job', 'destination'])
-            ->select(
-                "id",
-                "full_name as fullName",
-                "username",
-                "profile",
-                "status",
-                "grant_permission",
-                "email_id",
-                "role_id",
-                "contact_id",
-                "job_id",
-                "destination_id",
-                "created_at as createdAt",
-            )->find($id);
+        $foundUser = User::with(['userPermissions', 'contact', 'email', 'role', 'job', 'destination'])
+            ->find($id);
 
 
         if ($foundUser) {
-            $authUser = $request->user()->load('permissions');
+            $rolePermissions = RolePermission::where('role', '=', $foundUser->role_id)
+                ->select('permission')
+                ->get();
+
+            $authUser = $request->user()->load('userPermissions');
             // 2. Combine permissions of user1 and user2
-            $combinedPermissions = $foundUser->permissions->concat($authUser->permissions)->unique('permission');
+            $combinedPermissions = $foundUser->userPermissions->concat($authUser->userPermissions)->unique('permission');
             $concateArr = [];
             foreach ($combinedPermissions as $permission) {
                 $actualUser = $permission->user_id == $foundUser->id;
@@ -128,7 +120,6 @@ class UserController extends Controller
                     'id' => $permission->id,
                 ]);
             }
-            $combinedPermissions = $concateArr;
 
             return response()->json([
                 "user" => [
@@ -151,7 +142,7 @@ class UserController extends Controller
                     ],
                     "createdAt" => $foundUser->created_at,
                 ],
-                "permission" => $combinedPermissions
+                "permission" => $concateArr
             ], 200, [], JSON_UNESCAPED_UNICODE);
         } else
             return response()->json([
@@ -310,6 +301,11 @@ class UserController extends Controller
     public function destroy($id)
     {
         $user = User::find($id);
+        if ($user->role_id == RoleEnum::super->value) {
+            return response()->json([
+                'message' => __('app_translation.unauthorized'),
+            ], 403, [], JSON_UNESCAPED_UNICODE);
+        }
         if ($user) {
             // 1. Delete user email
             Email::where('id', '=', $user->email_id)->delete();
@@ -356,24 +352,27 @@ class UserController extends Controller
     public function changePassword(UpdateUserPasswordRequest $request)
     {
         $request->validated();
-        try {
-            $user = $request->get('validatedUser');
-            if ($user) {
-
+        $user = $request->get('validatedUser');
+        $authUser = $request->user();
+        if ($authUser->role_id == RoleEnum::super->value) {
+            $user->password = Hash::make($request->newPassword);
+            $user->save();
+        } else {
+            $request->validate([
+                "oldPassword" => ["required", "min:8", "max:45"],
+            ]);
+            if (!Hash::check($request->oldPassword, $user->password)) {
                 return response()->json([
-                    'message' => __('app_translation.success'),
-                ], 200, [], JSON_UNESCAPED_UNICODE);
+                    'message' => __('app_translation.incorrect_password'),
+                ], 422, [], JSON_UNESCAPED_UNICODE);
             } else {
-                return response()->json([
-                    'message' => __('app_translation.failed'),
-                ], 400, [], JSON_UNESCAPED_UNICODE);
+                $user->password = Hash::make($request->newPassword);
+                $user->save();
             }
-        } catch (Exception $err) {
-            Log::info('emailExist error =>' . $err->getMessage());
-            return response()->json([
-                'message' => __('app_translation.server_error')
-            ], 500, [], JSON_UNESCAPED_UNICODE);
         }
+        return response()->json([
+            'message' => __('app_translation.success'),
+        ], 200, [], JSON_UNESCAPED_UNICODE);
     }
     public function deleteProfile($id)
     {

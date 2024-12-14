@@ -2,12 +2,13 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
+use App\Traits\template\Auditable;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 class AdverbType extends Model
 {
-    /** @use HasFactory<\Database\Factories\AdverbTypeFactory> */
-    use HasFactory;
+    use HasFactory, Auditable;
+
     protected $guarded = [];
 }

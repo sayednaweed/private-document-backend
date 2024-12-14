@@ -20,8 +20,13 @@ return [
     'not_found' => 'Record Not Found.',
     'destination_type_not_found' => 'Destination type Not Found.',
     'source_not_found' => 'Source Not Found.',
+    'reference_not_found' => 'Reference Not Found.',
     'urgency_not_found' => 'Urgency Not Found.',
     'status_not_found' => 'Status Not Found.',
     'email_not_found' => 'Email Not Found.',
     'file_not_found' => 'File Not Found.',
+    'document_not_found' => 'Document Not Found.',
+    'document_destination_not_found' => 'Document Destination Not Found.',
+    'destination_not_found' => 'Destination Not Found.',
+    'document_locked_error' => 'You can not delete lock document.',
 ];

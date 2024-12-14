@@ -20,8 +20,15 @@ return [
     'not_found' => 'رکورد پیدا نشد.',
     'destination_type_not_found' => 'نوع مقصد یافت نشد.',
     'source_not_found' => 'منبع یافت نشد.',
+    'reference_not_found' => 'مرجع یافت نشد.',
     'urgency_not_found' => 'استعجالیت پیدا نشد.',
     'status_not_found' => 'حالت یافت نشد.',
     'email_not_found' => 'ایمیل پیدا نشد.',
     'file_not_found' => 'فایل پیدا نشد.',
+    'document_not_found' => 'سند پیدا نشد.',
+    'document_destination_not_found' => 'موقعیت سند یافت نشد.',
+    'destination_not_found' => 'موقعیت یافت نشد.',
+    'document_locked_error' => 'شما نمی توانید سند قفل را حذف کنید.',
+    "newPassword" => "رمز عبور جدید",
+    "confirmPassword" => "تایید رمز عبور"
 ];

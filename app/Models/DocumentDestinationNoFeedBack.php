@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Traits\template\Auditable;
 use Illuminate\Database\Eloquent\Model;
 
-class DocumentDestinationNoFeed extends Model
+class DocumentDestinationNoFeedBack extends Model
 {
+    use Auditable;
     protected $guarded = [];
 
     public function document()

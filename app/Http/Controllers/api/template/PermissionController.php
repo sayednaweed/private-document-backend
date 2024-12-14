@@ -4,9 +4,7 @@ namespace App\Http\Controllers\api\template;
 
 use App\Http\Controllers\Controller;
 use App\Models\RolePermission;
-use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
 
 class PermissionController extends Controller
 {

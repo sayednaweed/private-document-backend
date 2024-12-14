@@ -7,6 +7,7 @@ use App\Contracts\Encryptable;
 use App\Models\Audit;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Request;
 
 trait Auditable
@@ -130,6 +131,26 @@ trait Auditable
             'tags' => null,
         ]);
     }
+    public static function insertAuditByArray($class, $modelAttributes, $auditable_id)
+    {
+        $user = Auth::user();
+        $userType = $user ? get_class($user) : null;
+        $userId = $user ? $user->id : null;
+
+        Audit::create([
+            'user_type' => $userType,  // Assuming no authenticated user for this operation
+            'user_id' => $userId,
+            'event' => 'created',
+            'auditable_type' => $class,  // Change this to the appropriate model class
+            'auditable_id' => $auditable_id,  // You can set the model's ID if needed
+            'old_values' => null,
+            'new_values' => json_encode(encodeBinaryFields($modelAttributes)),
+            'url' => request()->url(),
+            'ip_address' => request()->ip(),
+            'user_agent' => request()->header('User-Agent'),
+            'tags' => null,
+        ]);
+    }
     // Helper function to insert encrypted data for any model
     public static function insertEncryptedData($modelClass, $attributes)
     {
@@ -237,12 +258,78 @@ trait Auditable
 
         // Add the ID at the end of the bindings for the WHERE clause
         $bindings[] = $id;  // Assuming you're updating the record with this ID
+        Log::debug("SQL Query: " . $bindings[3]);
 
-        // Execute the query
+        DB::beginTransaction();
         DB::update($sql, $bindings);
+        DB::commit();
+        // Execute the query
+        // DB::update($sql, $bindings);
 
         return true;
     }
+    // public static function updateEncryptedData($modelClass, $attributes, $id)
+    // {
+    //     $key = config('encryption.aes_key'); // The key for encryption
+
+    //     // Prepare the SQL query with AES_ENCRYPT encryption for specific fields
+    //     $columns = [];
+    //     $placeholders = [];
+    //     $bindings = [];
+
+    //     // Get the table name dynamically from the model class
+    //     $table = (new $modelClass)->getTable();  // This will give you the "documents" table name
+
+    //     // Check if the model implements Encryptable interface and get the encrypted fields
+    //     if (in_array(Encryptable::class, class_implements($modelClass))) {
+    //         // Retrieve the list of encrypted fields from the model's method if it implements Encryptable
+    //         $fieldsToEncrypt = $modelClass::getEncryptedFields();
+    //     } else {
+    //         // If the model doesn't implement Encryptable, use an empty array (no encryption fields)
+    //         $fieldsToEncrypt = [];
+    //     }
+
+    //     // Loop through the attributes and set up columns, placeholders, and bindings
+    //     foreach ($attributes as $column => $value) {
+    //         if ($column != 'id') { // Don't include 'id' in columns since it's used for the WHERE condition
+    //             $columns[] = $column;
+
+    //             if (in_array($column, $fieldsToEncrypt)) {
+    //                 $placeholders[] = $column . ' = AES_ENCRYPT(?, ?)';
+    //                 $bindings[] = $value;
+    //                 $bindings[] = $key;  // The encryption key
+    //             } else {
+    //                 $placeholders[] = $column . ' = ?';
+    //                 $bindings[] = $value;
+    //             }
+    //         }
+    //     }
+
+    //     // Add timestamp fields
+    //     if (!in_array('updated_at', $columns)) {
+    //         $columns[] = 'updated_at';
+    //         $placeholders[] = 'updated_at = ?';
+    //         $bindings[] = Carbon::now();
+    //     }
+
+    //     // Prepare the update SQL statement
+    //     $sql = 'UPDATE ' . $table . ' SET ' . implode(', ', $placeholders) . ' WHERE id = ?';
+
+    //     // Add the ID at the end of the bindings for the WHERE clause
+    //     $bindings[] = $id;  // Assuming you're updating the record with this ID
+
+    //     // Debugging the number of bindings and their contents
+    //     Log::debug("Bindings count: " . count($bindings));
+    //     Log::debug("SQL Query Bindings: " . implode(", ", $bindings));
+
+    //     // Perform the update query
+    //     DB::beginTransaction();
+    //     DB::update($sql, $bindings);
+    //     DB::commit();
+
+    //     return true;
+    // }
+
     public static function selectAndDecrypt($modelClass, $id)
     {
         // Get the decryption key from the configuration
@@ -290,6 +377,70 @@ trait Auditable
         if ($record) {
             // Return the first record as an array (assuming only one result)
             return (array) $record[0];
+        }
+
+        return null; // Return null if no record is found
+    }
+    public static function whereAndDecrypt($modelClass, $whereField, $whereValue)
+    {
+        // Get the decryption key from the configuration
+        $key = config('encryption.aes_key'); // Assuming the AES key is stored in config/encryption.php
+
+        // Get the table name dynamically from the model class
+        $table = (new $modelClass)->getTable();  // This will give you the "document_destinations" table name
+
+        // Check if the model implements Encryptable interface and get the encrypted fields
+        if (in_array(Encryptable::class, class_implements($modelClass))) {
+            // Retrieve the list of encrypted fields from the model's method if it implements Encryptable
+            $fieldsToDecrypt = $modelClass::getEncryptedFields();
+        } else {
+            // If the model doesn't implement Encryptable, use an empty array (no encryption fields)
+            $fieldsToDecrypt = [];
+        }
+
+        // Get all columns from the table (excluding encrypted ones)
+        $columns = DB::getSchemaBuilder()->getColumnListing($table);
+
+        // Prepare the SQL query to select columns and decrypt specific fields
+        $selectColumns = [];
+
+        // Loop through the fields and prepare the columns for decryption
+        foreach ($fieldsToDecrypt as $field) {
+            // Add the AES_DECRYPT function for each encrypted field, directly using the hardcoded key
+            $selectColumns[] = 'AES_DECRYPT(' . $field . ', "' . $key . '") AS ' . $field;
+        }
+
+        // Include the other columns that are not encrypted
+        foreach ($columns as $column) {
+            // Only add columns that are not encrypted
+            if (!in_array($column, $fieldsToDecrypt)) {
+                $selectColumns[] = $column;
+            }
+        }
+
+        // Build the base SQL query with the SELECT columns
+        $sql = 'SELECT ' . implode(', ', $selectColumns) . ' FROM ' . $table;
+
+        // Add the WHERE condition for the provided field and value
+        if ($whereField && $whereValue) {
+            $sql .= ' WHERE ' . $whereField . ' = ?';
+            $bindings = [$whereValue];
+        } else {
+            return null; // If no where condition is provided, return null
+        }
+
+        // Execute the query with the specified bindings
+        $record = DB::select($sql, $bindings);
+
+        // If a record is found, return it as an Eloquent model instance with decrypted fields
+        if ($record) {
+            // Hydrate the model with the data (first record)
+            $recordData = (array) $record[0];
+
+            // Create a new instance of the model and set the attributes
+            $model = new $modelClass();
+            $model->setRawAttributes($recordData, true);  // Set attributes without casting
+            return $model;
         }
 
         return null; // Return null if no record is found

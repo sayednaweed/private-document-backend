@@ -11,5 +11,11 @@ return [
         "username" => "Username",
         'id' => 'ID',
         'name' => 'Full name',
+        'reference' => 'Reference',
+        'destination' => 'Destination',
+        "savedFile" => "Related book",
+        "oldPassword" => "Old Password",
+        "newPassword" => "New Password",
+        "confirmPassword" => "Confirm Password"
     ],
 ];

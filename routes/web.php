@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\RoleEnum;
-use App\Http\Controllers\api\template\ApplicationController;
-use App\Http\Controllers\TestController;
-use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\lib\report\ReportController;
 use App\Models\User;
+use App\Enums\RoleEnum;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\TestController;
+use App\Http\Controllers\api\template\ReportController;
+use App\Http\Controllers\api\template\ApplicationController;
 
 
 

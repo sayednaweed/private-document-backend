@@ -11,15 +11,19 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('document_destination_no_feedback', function (Blueprint $table) {
+        Schema::create('document_destination_no_feed_backs', function (Blueprint $table) {
             $table->id();
             $table->timestamp('send_date')->useCurrent();
             $table->unsignedBigInteger('document_id');
             $table->foreign('document_id')->references('id')->on('documents')
                 ->onUpdate('cascade')
-                ->onDelete('no action');
+                ->onDelete('cascade');
             $table->unsignedBigInteger('destination_id');
             $table->foreign('destination_id')->references('id')->on('destinations')
+                ->onUpdate('cascade')
+                ->onDelete('no action');
+            $table->unsignedBigInteger('reciever_user_id');
+            $table->foreign('reciever_user_id')->references('id')->on('users')
                 ->onUpdate('cascade')
                 ->onDelete('no action');
             $table->index(['destination_id', 'document_id'], 'destination_document');
@@ -32,6 +36,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('document_destination_no_feeds');
+        Schema::dropIfExists('document_destination_no_feed_backs');
     }
 };

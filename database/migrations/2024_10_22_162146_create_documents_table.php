@@ -17,8 +17,8 @@ return new class extends Migration
             $table->binary('summary');
             $table->binary('saved_file')->nullable()->comment('In Which book shell document is saved');
             $table->string('document_date');
-            $table->boolean('disabled');
-            $table->boolean('old');
+            $table->boolean('locked');
+            $table->boolean('old_doc');
             $table->unsignedBigInteger('document_type_id');
             $table->foreign('document_type_id')->references('id')->on('document_types')
                 ->onUpdate('cascade')
