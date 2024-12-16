@@ -22,21 +22,15 @@ class DashboardController extends Controller
         // Map the results
         $documentCountByStatus = $results[0] ?? [];
         $documentTypePercentages = $results[1] ?? [];
-        $monthlyDocumentTypeCount = $results[2] ?? [];
         // $documentTypeSixMonths = $results[3] ?? [];
-        $documentUrgencyCounts = $results[3] ?? [];
-        $monthlyDocumentCounts = $results[4] ?? [];
-
-        // return $monthlyDocumentTypeCount;
+        $documentUrgencyCounts = $results[2] ?? [];
+        $monthlyDocumentCounts = $results[3] ?? [];
 
         if ($documentUrgencyCounts) {
         }
         // Process monthly document counts
         $monthlyData = $this->processMonthlyData($monthlyDocumentCounts);
 
-
-        // Process grouped data for monthly type counts
-        $groupedMonthlyTypeCounts = $this->groupMonthlyTypeCounts($monthlyDocumentTypeCount);
 
         // Process document type percentages
         $documentTypeData = $this->processDocumentTypePercentages($documentTypePercentages);
@@ -45,7 +39,6 @@ class DashboardController extends Controller
         return response()->json([
             'statuses' => $documentCountByStatus,
             'documentTypePercentages' => $documentTypeData,
-            'montlyTypeCount' => $groupedMonthlyTypeCounts,
             'documentUrgencyCounts' => $documentUrgencyCounts,
             'monthlyDocumentCounts' => $monthlyData,
         ]);
@@ -104,42 +97,6 @@ class DashboardController extends Controller
         }
 
         return [$monthNamesArray, $monthCountsArray];
-    }
-
-    private function groupMonthlyTypeCounts(array $monthlyDocumentTypeCount): array
-    {
-        // Initialize an array for all months (1-12) with 0 counts
-        $allMonths = range(1, 12);
-
-        // Group data by document type
-        $groupedData = [];
-
-        foreach ($monthlyDocumentTypeCount as $entry) {
-            $typeName = $entry['document_type_name'];
-            $month = $entry['month'];
-            $count = $entry['document_count'];
-
-            // Ensure each document type has an array of 12 months initialized with 0
-            if (!isset($groupedData[$typeName])) {
-                $groupedData[$typeName] = array_fill(0, 12, 0);
-            }
-
-            // If a valid month is provided, increment the corresponding count
-            if ($month !== null && $month >= 1 && $month <= 12) {
-                $groupedData[$typeName][$month - 1] += $count;
-            }
-        }
-
-        // Format the final result
-        $finalResult = [];
-        foreach ($groupedData as $typeName => $monthlyData) {
-            $finalResult[] = [
-                'document_type_name' => $typeName,
-                'monthly_data' => $monthlyData, // Only the counts for each month
-            ];
-        }
-
-        return $finalResult;
     }
 
 
