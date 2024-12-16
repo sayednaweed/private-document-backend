@@ -16,11 +16,9 @@ class ApplicationController extends Controller
             if ($locale === "en" || $locale === "fa" || $locale === "ps") {
                 // 1. Set app language
                 App::setLocale($locale);
-                // 2. Set cookie
-                $minutes = 60 * 24 * 365; // 30 days
                 return response()->json([
                     'message' => __('app_translation.lang_change_success'),
-                ], 200, [], JSON_UNESCAPED_UNICODE)->cookie('locale', $locale, $minutes, null, null, true, true);
+                ], 200, [], JSON_UNESCAPED_UNICODE);
             } else {
                 // 3. Passed language not exist in system
                 response()->json([

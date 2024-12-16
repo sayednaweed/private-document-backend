@@ -107,6 +107,20 @@ class TestController extends Controller
     ];
     public function index(Request $request)
     {
+
+
+        $rolePermissions = RolePermission::where('role', '=', 4)
+            ->select('permission')
+            ->get();
+        for ($index = 0; $index < count($rolePermissions); $index++) {
+            return $rolePermissions[$index]['permission']; // Accessing the 'permission' key
+        }
+
+
+
+
+
+
         $results = DB::select('CALL GetUsers(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             'ps',
             '2024-11-13',    // Start date filter

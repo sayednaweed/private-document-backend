@@ -17,7 +17,7 @@ class LocaleMiddleware
     public function handle(Request $request, Closure $next): Response
     {
         // Check if the cookie locale is set
-        $userLocale = $request->cookie('locale', 'en');
+        $userLocale = $request->header("X-LOCALE");
         if (!$userLocale) {
             // Retrieve the default locale from the config
             $defaultLocale = config('app.locale');

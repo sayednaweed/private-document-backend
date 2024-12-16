@@ -23,7 +23,7 @@ require __DIR__ . '/api/template/profile.php';
 require __DIR__ . '/api/template/application.php';
 require __DIR__ . '/api/template/log.php';
 require __DIR__ . '/api/template/destination.php';
-require __DIR__ . '/api/template/destinationtype.php';
+require __DIR__ . '/api/template/destinationType.php';
 require __DIR__ . '/api/template/audit.php';
 require __DIR__ . '/api/template/dashboard.php';
 require __DIR__ . '/api/app/documents.php';

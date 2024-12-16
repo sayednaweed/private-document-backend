@@ -18,7 +18,9 @@ class ValidateApiKey
     public function handle(Request $request, Closure $next): Response
     {
         $apiKey = $request->header('X-API-KEY');
-        $ipAddress = $request->ip();
+        $serverIp = $request->header('X-SERVER-ADDR'); // This gets the IP address of the server the request is sent to
+
+
 
         // Check if the API key is provided
         if (!$apiKey) {
@@ -26,7 +28,7 @@ class ValidateApiKey
         }
 
         // Retrieve the API key record based on the IP address
-        $row = ApiKey::select('hashed_key', 'is_active')->where('ip_address', $ipAddress)->first();
+        $row = ApiKey::select('hashed_key', 'is_active')->where('ip_address', $serverIp)->first();
 
         // Check if the row exists
         if (!$row) {

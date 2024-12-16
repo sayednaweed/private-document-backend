@@ -110,15 +110,23 @@ class UserController extends Controller
             $combinedPermissions = $foundUser->userPermissions->concat($authUser->userPermissions)->unique('permission');
             $concateArr = [];
             foreach ($combinedPermissions as $permission) {
-                $actualUser = $permission->user_id == $foundUser->id;
-                array_push($concateArr, [
-                    'permission' => $permission->permission,
-                    'view' => $actualUser ? $permission->view : false,
-                    'add' => $actualUser ? $permission->add : false,
-                    'delete' => $actualUser ? $permission->delete : false,
-                    'edit' => $actualUser ? $permission->edit : false,
-                    'id' => $permission->id,
-                ]);
+                for ($index = 0; $index < count($rolePermissions); $index++) {
+                    $item = $rolePermissions[$index]['permission'];
+                    if ($item == $permission->permission) {
+                        $actualUser = $permission->user_id == $foundUser->id;
+
+                        array_push($concateArr, [
+                            'permission' => $permission->permission,
+                            'view' => $actualUser ? $permission->view : false,
+                            'add' => $actualUser ? $permission->add : false,
+                            'delete' => $actualUser ? $permission->delete : false,
+                            'edit' => $actualUser ? $permission->edit : false,
+                            'id' => $permission->id,
+                        ]);
+
+                        break;
+                    }
+                }
             }
 
             return response()->json([
