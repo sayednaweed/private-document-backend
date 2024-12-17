@@ -9,6 +9,7 @@ use App\Enums\ScanTypeEnum;
 use App\Enums\StatusEnum;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\app\document\DocumentStoreRequest;
+use App\Http\Requests\app\document\DocumentUpdateRequest;
 use App\Http\Requests\app\document\RecievedFromDeputyRequest;
 use App\Http\Requests\app\document\RecievedFromDirectorateRequest;
 use App\Models\Destination;
@@ -323,6 +324,61 @@ class DocumentController extends Controller
         ], 200, [], JSON_UNESCAPED_UNICODE);
     }
 
+    public function update(DocumentUpdateRequest $request)
+    {
+        // 1. Validate
+        $request->validated();
+
+        // 2. Check records exist
+        $document = Auditable::selectAndDecrypt(Document::class, $request->id);
+        if (!$document) {
+            return response()->json([
+                'message' => __('app_translation.document_not_found')
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        $documentType = DocumentType::find($request->documentTypeId);
+        if (!$documentType) {
+            return response()->json([
+                'message' => __('app_translation.destination_type_not_found')
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+
+        $source = Source::find($request->sourceId);
+        if (!$source) {
+            return response()->json([
+                'message' => __('app_translation.source_not_found')
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        $urgency = Urgency::find($request->urgencyId);
+        if (!$urgency) {
+            return response()->json([
+                'message' => __('app_translation.urgency_not_found')
+            ], 404, [], JSON_UNESCAPED_UNICODE);
+        }
+        // 3. Update
+        $document['document_date'] = $request->documentDate;
+        $document['document_number'] = $request->documentNumber;
+        $document['summary'] = $request->subject;
+        $document['urgency_id'] = $urgency->id;
+        $document['source_id'] = $source->id;
+        $document['document_type_id'] = $documentType->id;
+        // 4. Update Adverbs
+        $adverb = DocumentAdverb::where('document_id', '=', $request->id)
+            ->where('adverb_type_id', '=', AdverbEnum::qaidWarida->value)
+            ->first();
+        $adverb->date = $request->qaidWaridaDate;
+        $adverb->number = $request->qaidWarida;
+        // 4. Store
+        $adverb->save();
+        Auditable::updateEncryptedData(Document::class, $document, $request->id);
+        Auditable::insertAuditByArray(Document::class, $document, $request->id);
+
+        return response()->json([
+            'message' => __('app_translation.success')
+        ], 200, [], JSON_UNESCAPED_UNICODE);
+    }
+
     public function progress($id)
     {
         $locale = App::getLocale();
@@ -569,62 +625,7 @@ class DocumentController extends Controller
             ], 400, [], JSON_UNESCAPED_UNICODE);
         }
     }
-    // Utils
-    // private function translations($locale)
-    // {
-    //     // Fetch destinations with their translations and the related destination type translations
-    //     $query = Destination::whereHas('translations', function ($query) use ($locale) {
-    //         // Filter the translations for each destination by locale
-    //         $query->where('language_name', '=', $locale);
-    //     })
-    //         ->with([
-    //             'translations' => function ($query) use ($locale) {
-    //                 // Eager load only the 'value' column for translations filtered by locale
-    //                 $query->select('id', 'value', 'created_at', 'translable_id')
-    //                     // Eager load the translations for Destination filtered by locale
-    //                     ->where('language_name', '=', $locale);
-    //             },
-    //             'type.translations' => function ($query) use ($locale) {
-    //                 // Eager load only the 'value' column for translations filtered by locale
-    //                 $query->select('id', 'value', 'created_at', 'translable_id')
-    //                     // Eager load the translations for DestinationType filtered by locale
-    //                     ->where('language_name', '=', $locale);
-    //             }
-    //         ])
-    //         ->select('id', 'color', 'destination_type_id', 'created_at')
-    //         ->get();
 
-    //     // Process results and include the translations of DestinationType within each Destination
-    //     // Transform the collection
-    //     $query->each(function ($destination) {
-    //         // Get the translated values for the destination
-    //         $destinationTranslation = $destination->translations->first();
-
-    //         // Set the transformed values for the destination
-    //         $destination->id = $destination->id;
-    //         $destination->name = $destinationTranslation->value;  // Translated name
-    //         $destination->color = $destination->color;  // Translated color
-    //         $destination->createdAt = $destination->created_at;
-
-    //         // Get the translated values for the related DestinationType
-    //         $destinationTypeTranslation = $destination->type->translations->first();
-
-    //         // Add the related DestinationType translation
-    //         $type = [
-    //             "id" => $destination->destination_type_id,
-    //             "name" => $destinationTypeTranslation->value,  // Translated name of the type
-    //             "createdAt" => $destinationTypeTranslation->created_at
-    //         ];
-    //         unset($destination->type);  // Remove destinationType relation
-    //         $destination->type = $type;
-
-    //         // Remove unnecessary data from the destination object
-    //         unset($destination->translations);  // Remove translations relation
-    //         unset($destination->created_at);  // Remove translations relation
-    //         unset($destination->destination_type_id);  // Remove translations relation
-    //     });
-    //     return $query;
-    // }
     public function documentCount()
     {
         return response()->json([

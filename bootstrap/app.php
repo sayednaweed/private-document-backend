@@ -9,6 +9,7 @@ use App\Http\Middleware\api\template\HasGrantPermissionMiddleware;
 use App\Http\Middleware\api\template\HasViewPermissionMiddleware;
 use App\Http\Middleware\api\template\LocaleMiddleware;
 use App\Http\Middleware\api\template\ValidateApiKey;
+use App\Http\Middleware\web\EnsureUserIsDebugger;
 use App\Http\Middleware\web\EnsureUserIsMaster;
 use App\Jobs\LogErrorJob;
 use Illuminate\Foundation\Application;
@@ -33,6 +34,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 'hasGrantPermission' => HasGrantPermissionMiddleware::class,
                 'allowAdminOrSuper'  => AllowAdminOrSuperMiddleware::class,
                 'isSuper'  => EnsureUserIsMaster::class,
+                'isDebugger'  => EnsureUserIsDebugger::class,
                 'accessUserCheck'  => AccessUserCheckMiddleware::class,
                 'api.key' => ValidateApiKey::class,
             ]);

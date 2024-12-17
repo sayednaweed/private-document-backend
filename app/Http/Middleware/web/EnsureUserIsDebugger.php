@@ -2,13 +2,13 @@
 
 namespace App\Http\Middleware\web;
 
+use App\Enums\RoleEnum;
 use Closure;
 use Illuminate\Http\Request;
-use Symfony\Component\HttpFoundation\Response;
 use Illuminate\Support\Facades\Auth;
-use App\Enums\RoleEnum;
+use Symfony\Component\HttpFoundation\Response;
 
-class MasterRoleMiddleware
+class EnsureUserIsDebugger
 {
     /**
      * Handle an incoming request.
@@ -25,8 +25,6 @@ class MasterRoleMiddleware
             }
             abort(403, 'Unauthorized action.');
         }
-
-
         return redirect()->route('web.login');
     }
 }

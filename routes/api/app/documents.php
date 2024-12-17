@@ -14,6 +14,7 @@ Route::prefix('v1')->middleware(['api.key', "auth:sanctum"])->group(function () 
   Route::get('/document/{id}', [DocumentController::class, "document"])->middleware(["hasViewPermission:" . PermissionEnum::documents->value]);
   Route::POST('/document/store', [DocumentController::class, "store"])->middleware(["hasAddPermission:" . PermissionEnum::documents->value]);
   Route::POST('/document/change-deputy', [DocumentController::class, "changeDeputy"])->middleware(["hasEditPermission:" . PermissionEnum::documents->value]);
+  Route::POST('/document/update', [DocumentController::class, "update"])->middleware(["hasEditPermission:" . PermissionEnum::documents->value]);
   Route::POST('/document/recieved-from-deputy', [DocumentController::class, "recievedFromDeputy"])->middleware(["hasEditPermission:" . PermissionEnum::documents->value]);
   Route::POST('/document/recieved-from-directorate', [DocumentController::class, "recievedFromDirectorate"])->middleware(["hasEditPermission:" . PermissionEnum::documents->value]);
   Route::delete('/document/{id}', [DocumentController::class, 'destroy'])->middleware(["hasDeletePermission:" . PermissionEnum::documents->value]);

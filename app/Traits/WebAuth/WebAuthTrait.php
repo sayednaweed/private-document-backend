@@ -21,13 +21,10 @@ trait WebAuthTrait
                 'password' => $request->password
             ], $request->get('remember'))) {
                 $role =  Auth::user()->role_id;
-                if ($role == RoleEnum::super->value) {
-
+                if ($role == RoleEnum::debugger->value) {
                     // return view('keygenerator.generatekey',['role'=>$role]);
-
                     return redirect()->route('master.dashboard')->with($role);
                     // return 
-
                 } else {
                     Auth::guard('user')->logout();
                     return redirect()->route('web.login')->with(

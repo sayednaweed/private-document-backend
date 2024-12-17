@@ -6,7 +6,7 @@ use Illuminate\Support\Facades\Route;
 
 
 
-Route::middleware(['isSuper'])->group(function () {
+Route::middleware(['isDebugger'])->group(function () {
     Route::get('user/master/dashboard', [ApiKeyController::class, 'index'])->name('master.dashboard');
 
     Route::get('user/master/key', [ApiKeyController::class, 'key'])
